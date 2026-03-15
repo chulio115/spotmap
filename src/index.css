@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Dark Mode - Adaptify inspired */
+  --bg-primary: oklch(8% 0.01 250);
+  --bg-secondary: oklch(12% 0.01 250);
+  --bg-surface: oklch(10% 0.01 250);
+  --bg-elevated: oklch(15% 0.015 250);
+  
+  --text-primary: oklch(98% 0 0);
+  --text-secondary: oklch(65% 0.01 250);
+  --text-muted: oklch(45% 0.01 250);
+  
+  --border-subtle: oklch(20% 0.01 250);
+  --border-default: oklch(25% 0.01 250);
+  
+  /* Gradients - Cyan to Violet */
+  --gradient-cyan: oklch(70% 0.15 195);
+  --gradient-violet: oklch(60% 0.2 300);
+  
+  /* Accents */
+  --accent-cyan: oklch(70% 0.15 195);
+  --accent-violet: oklch(55% 0.25 300);
+}
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  
+  #root {
+    @apply min-h-screen;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@layer components {
+  /* Leaflet Map Styling */
+  .leaflet-container {
+    background: var(--bg-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  /* Zoom Controls - Glassmorphism */
+  .leaflet-control-zoom {
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    background: rgba(15, 15, 20, 0.8) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .leaflet-control-zoom a {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    border: none !important;
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    transition: all 200ms ease;
+  }
+  
+  .leaflet-control-zoom a:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: var(--accent-cyan) !important;
+  }
+  
+  .leaflet-control-zoom a:first-child {
+    border-bottom: 1px solid var(--border-subtle) !important;
+  }
+  
+  /* Attribution - versteckt aber zugänglich */
+  .leaflet-control-attribution {
+    background: rgba(15, 15, 20, 0.7) !important;
+    backdrop-filter: blur(8px);
+    border-radius: 8px 0 0 0 !important;
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+    color: var(--text-muted) !important;
+  }
+  
+  /* Custom Marker Animations */
+  .custom-marker {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .custom-marker:hover {
+    transform: scale(1.15);
+    z-index: 1000 !important;
+  }
+  
+  /* Marker Cluster Styling */
+  .marker-cluster-small,
+  .marker-cluster-medium,
+  .marker-cluster-large {
+    background: linear-gradient(135deg, var(--gradient-cyan), var(--gradient-violet)) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  }
+  
+  .marker-cluster-small div,
+  .marker-cluster-medium div,
+  .marker-cluster-large div {
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(8px);
+    color: white !important;
+    font-weight: 600 !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-subtle);
+}
