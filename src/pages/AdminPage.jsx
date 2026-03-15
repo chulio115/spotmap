@@ -1,26 +1,32 @@
 import { useState, useEffect } from 'react'
+import { collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../lib/firebase'
+import { useAuth } from '../lib/AuthContext'
 
-export default function AdminPage({ currentUser }) {
+export default function AdminPage() {
+  const { user } = useAuth()
   const [allowedEmails, setAllowedEmails] = useState([])
-  const [registeredUsers, setRegisteredUsers] = useState([])
   const [newEmail, setNewEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('')
 
-  // Mock Daten für Demo
+  // Lade allowed emails aus Firestore
   useEffect(() => {
-    // Simuliere API Calls
-    setAllowedEmails([
-      { id: '1', email: 'admin@spotmap.de', invited_by: null, created_at: new Date().toISOString() },
-      { id: '2', email: 'user1@example.com', invited_by: 'admin@spotmap.de', created_at: new Date(Date.now() - 86400000).toISOString() },
-      { id: '3', email: 'user2@example.com', invited_by: 'admin@spotmap.de', created_at: new Date(Date.now() - 172800000).toISOString() }
-    ])
+    const fetchAllowedEmails = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'allowed_emails'))
+        const emails = snapshot.docs.map(doc => ({
+          email: doc.id,
+          ...doc.data()
+        }))
+        setAllowedEmails(emails)
+      } catch (error) {
+        console.error('Error fetching allowed emails:', error)
+      }
+    }
 
-    setRegisteredUsers([
-      { id: '1', email: 'admin@spotmap.de', created_at: new Date().toISOString(), last_sign_in_at: new Date().toISOString() },
-      { id: '2', email: 'user1@example.com', created_at: new Date(Date.now() - 86400000).toISOString(), last_sign_in_at: new Date(Date.now() - 3600000).toISOString() }
-    ])
+    fetchAllowedEmails()
   }, [])
 
   const handleAddEmail = async (e) => {
@@ -50,17 +56,17 @@ export default function AdminPage({ currentUser }) {
     setMessage('')
 
     try {
-      // Hier wird später die Supabase Logik implementiert
-      console.log('E-Mail würde hinzugefügt:', newEmail)
-      
-      // Mock API Call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Füge Email zu Firestore hinzu
+      await setDoc(doc(db, 'allowed_emails', newEmail), {
+        email: newEmail,
+        invitedBy: user.uid,
+        createdAt: serverTimestamp()
+      })
       
       const newEntry = {
-        id: Date.now().toString(),
         email: newEmail,
-        invited_by: currentUser.email,
-        created_at: new Date().toISOString()
+        invitedBy: user.uid,
+        createdAt: new Date()
       }
       
       setAllowedEmails(prev => [...prev, newEntry])
@@ -77,19 +83,16 @@ export default function AdminPage({ currentUser }) {
     }
   }
 
-  const handleRemoveEmail = async (emailId) => {
-    if (!confirm('Bist du sicher, dass du diese E-Mail entfernen möchtest?')) {
+  const handleRemoveEmail = async (email) => {
+    if (!window.confirm('Möchtest du diese E-Mail wirklich von der Allowlist entfernen?')) {
       return
     }
 
     try {
-      // Hier wird später die Supabase Logik implementiert
-      console.log('E-Mail würde entfernt:', emailId)
+      // Entferne Email aus Firestore
+      await deleteDoc(doc(db, 'allowed_emails', email))
       
-      // Mock API Call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      setAllowedEmails(prev => prev.filter(item => item.id !== emailId))
+      setAllowedEmails(prev => prev.filter(item => item.email !== email))
       setMessage('✅ E-Mail erfolgreich von der Allowlist entfernt')
       setMessageType('success')
       

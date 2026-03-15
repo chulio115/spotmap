@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './lib/AuthContext'
 import Header from './components/Header'
 import MapPage from './pages/MapPage'
 import FeedPage from './pages/FeedPage'
@@ -11,33 +12,20 @@ import PhotoGallery from './components/PhotoGallery'
 import './index.css'
 
 function App() {
+  const { user, logout, isAdmin } = useAuth()
   const [activeView, setActiveView] = useState('map')
-  const [currentUser, setCurrentUser] = useState(() => {
-    const mockUser = localStorage.getItem('spotmap_user')
-    return mockUser ? JSON.parse(mockUser) : null
-  })
-  const [notificationCount, setNotificationCount] = useState(3) // Mock für Phase 1
+  const [notificationCount, setNotificationCount] = useState(3)
   const [showSpotForm, setShowSpotForm] = useState(false)
   const [selectedSpot, setSelectedSpot] = useState(null)
   const [showPhotoGallery, setShowPhotoGallery] = useState(false)
   const [formPosition, setFormPosition] = useState(null)
-
-  const handleLogin = (user) => {
-    setCurrentUser(user)
-    localStorage.setItem('spotmap_user', JSON.stringify(user))
-  }
-
-  const handleLogout = () => {
-    setCurrentUser(null)
-    localStorage.removeItem('spotmap_user')
-  }
 
   const handleSpotClick = (spot) => {
     setSelectedSpot(spot)
   }
 
   const handleMapClick = (latlng) => {
-    if (!currentUser) {
+    if (!user) {
       alert('Bitte melde dich an um Spots zu erstellen')
       return
     }
@@ -61,12 +49,7 @@ function App() {
     // Hier wird später die Notification-Logik implementiert
   }
 
-  const isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL
-
-  // Wenn nicht eingeloggt, zeige LoginPage
-  if (!currentUser) {
-    return <LoginPage onLogin={handleLogin} />
-  }
+  // Wenn nicht eingeloggt, redirect zu /login via Router
 
   return (
     <Router>
@@ -75,36 +58,47 @@ function App() {
           activeView={activeView}
           onViewChange={setActiveView}
           notificationCount={notificationCount}
-          currentUser={currentUser}
-          onLogout={handleLogout}
+          currentUser={user}
+          onLogout={logout}
           onNotificationClick={handleNotificationClick}
         />
         
         <Routes>
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<Navigate to="/map" replace />} />
           <Route 
             path="/map" 
             element={
-              <MapPage 
-                onSpotClick={handleSpotClick}
-                onMapClick={handleMapClick}
-              />
+              user ? (
+                <MapPage 
+                  onSpotClick={handleSpotClick}
+                  onMapClick={handleMapClick}
+                />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             } 
           />
           <Route 
             path="/feed" 
             element={
-              <FeedPage 
-                onSpotClick={handleSpotClick}
-              />
+              user ? (
+                <FeedPage 
+                  onSpotClick={handleSpotClick}
+                />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             } 
           />
           <Route 
             path="/admin" 
             element={
-              isAdmin ? 
-              <AdminPage currentUser={currentUser} /> : 
-              <Navigate to="/map" replace />
+              user && isAdmin ? (
+                <AdminPage />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             } 
           />
         </Routes>

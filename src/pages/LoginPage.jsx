@@ -1,58 +1,39 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../lib/AuthContext'
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage() {
   const [email, setEmail] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const [messageType, setMessageType] = useState('') // 'success' | 'error'
+  const [messageType, setMessageType] = useState('') // 'success' or 'error'
+  const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate()
+  const { sendMagicLink, user } = useAuth()
+
+  // Redirect if already logged in
+  if (user) {
+    navigate('/')
+    return null
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    if (!email.trim()) {
-      setMessage('Bitte gib eine E-Mail-Adresse ein')
-      setMessageType('error')
-      return
-    }
-
-    // E-Mail Validierung
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      setMessage('Bitte gib eine gültige E-Mail-Adresse ein')
-      setMessageType('error')
-      return
-    }
-
     setIsLoading(true)
     setMessage('')
+    setMessageType('')
 
     try {
-      // Hier wird später die Supabase Magic Link Auth implementiert
-      console.log('Magic Link würde gesendet an:', email)
-      
-      // Mock Simulation
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      setMessage('✅ Magic Link wurde an deine E-Mail gesendet!')
+      await sendMagicLink(email)
       setMessageType('success')
-      
-      // Simuliere erfolgreichen Login nach 3 Sekunden
-      setTimeout(() => {
-        onLogin({ email, id: 'demo-user-id' })
-      }, 3000)
-      
+      setMessage('✉️ Login-Link wurde gesendet! Schau in dein Postfach.')
+      setEmail('')
     } catch (error) {
-      console.error('Login Fehler:', error)
-      
-      // Verschiedene Fehlermeldungen basierend auf dem Fehler
-      if (error.message?.includes('allowed_emails')) {
-        setMessage('❌ Du wurdest noch nicht eingeladen. Kontaktiere den Admin.')
-      } else if (error.message?.includes('Invalid email')) {
-        setMessage('❌ Ungültige E-Mail-Adresse')
-      } else {
-        setMessage('❌ Fehler beim Senden des Magic Links. Bitte versuche es später erneut.')
-      }
       setMessageType('error')
+      if (error.message.includes('nicht eingeladen')) {
+        setMessage('❌ ' + error.message)
+      } else {
+        setMessage('❌ Fehler beim Senden des Login-Links. Bitte versuche es erneut.')
+      }
     } finally {
       setIsLoading(false)
     }

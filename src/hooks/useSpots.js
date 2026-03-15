@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 
 // Mock Daten für Phase 1
 const mockSpots = [
@@ -59,77 +61,80 @@ export function useSpots() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Simuliere API Call
   useEffect(() => {
     const fetchSpots = async () => {
+      setLoading(true)
+      setError(null)
+      
       try {
-        setLoading(true)
-        setError(null)
+        const q = query(collection(db, 'spots'), orderBy('createdAt', 'desc'))
+        const snapshot = await getDocs(q)
+        const spotsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
         
-        // Hier wird später die Supabase Abfrage implementiert
-        // const { data, error } = await supabase.from('spots').select('*')
-        
-        // Mock Simulation
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setSpots(mockSpots)
-        
+        setSpots(spotsData)
       } catch (err) {
-        console.error('Fehler beim Laden der Spots:', err)
-        setError('Spots konnten nicht geladen werden')
+        console.error('Error fetching spots:', err)
+        setError(err.message)
       } finally {
         setLoading(false)
       }
     }
-
+    
     fetchSpots()
   }, [])
 
-  const createSpot = async (spotData) => {
+  const createSpot = async (spotData, user) => {
     try {
-      // Hier wird später die Supabase Logik implementiert
-      // const { data, error } = await supabase.from('spots').insert(spotData)
-      
-      // Mock Simulation
-      const newSpot = {
+      const docRef = await addDoc(collection(db, 'spots'), {
         ...spotData,
-        id: Date.now().toString(),
-        created_at: new Date().toISOString()
+        createdBy: user.uid,
+        createdByEmail: user.email,
+        createdAt: serverTimestamp()
+      })
+      
+      const newSpot = {
+        id: docRef.id,
+        ...spotData,
+        createdBy: user.uid,
+        createdByEmail: user.email,
+        createdAt: new Date()
       }
       
       setSpots(prev => [newSpot, ...prev])
       return newSpot
-      
     } catch (err) {
-      console.error('Fehler beim Erstellen des Spots:', err)
-      throw new Error('Spot konnte nicht erstellt werden')
+      console.error('Error creating spot:', err)
+      setError(err.message)
+      throw err
     }
   }
 
   const updateSpot = async (spotId, updates) => {
     try {
-      // Hier wird später die Supabase Logik implementiert
-      // const { data, error } = await supabase.from('spots').update(updates).eq('id', spotId)
+      const spotRef = doc(db, 'spots', spotId)
+      await updateDoc(spotRef, updates)
       
       setSpots(prev => prev.map(spot => 
         spot.id === spotId ? { ...spot, ...updates } : spot
       ))
-      
     } catch (err) {
-      console.error('Fehler beim Aktualisieren des Spots:', err)
-      throw new Error('Spot konnte nicht aktualisiert werden')
+      console.error('Error updating spot:', err)
+      setError(err.message)
+      throw err
     }
   }
 
   const deleteSpot = async (spotId) => {
     try {
-      // Hier wird später die Supabase Logik implementiert
-      // const { error } = await supabase.from('spots').delete().eq('id', spotId)
-      
+      await deleteDoc(doc(db, 'spots', spotId))
       setSpots(prev => prev.filter(spot => spot.id !== spotId))
-      
     } catch (err) {
-      console.error('Fehler beim Löschen des Spots:', err)
-      throw new Error('Spot konnte nicht gelöscht werden')
+      console.error('Error deleting spot:', err)
+      setError(err.message)
+      throw err
     }
   }
 
