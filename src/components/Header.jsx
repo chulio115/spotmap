@@ -1,10 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Settings, LogOut } from 'lucide-react'
 
-export default function Header({ onViewChange, currentUser, onLogout }) {
+export default function Header({ onViewChange, onLogout }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL
 
   const handleNavClick = (view) => {
     onViewChange(view)
@@ -24,15 +23,13 @@ export default function Header({ onViewChange, currentUser, onLogout }) {
             <span className="hidden sm:inline">SpotMap</span>
           </button>
           
-          {isAdmin && (
-            <button
-              onClick={() => navigate('/admin')}
-              className="p-1.5 text-gray-500 hover:text-violet-400 transition-colors"
-              title="Admin Einstellungen"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            onClick={() => navigate('/admin')}
+            className="p-1.5 text-gray-500 hover:text-violet-400 transition-colors"
+            title="Einstellungen"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Navigation - Pill Style */}
