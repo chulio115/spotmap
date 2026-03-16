@@ -77,8 +77,8 @@ export default function Header({ onViewChange, currentUser, onLogout }) {
           {showMenu && (
             <>
               {console.log('📋 Rendering dropdown menu')}
-              <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 mt-2 z-50 bg-gray-900/95 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-2xl overflow-hidden min-w-[200px]">
+              <div className="fixed inset-0 z-[9998]" onClick={() => setShowMenu(false)} />
+              <div className="absolute right-0 mt-2 z-[9999] bg-gray-900/95 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-2xl overflow-hidden min-w-[200px]">
                 {/* User Info */}
                 <div className="px-4 py-3 border-b border-white/[0.04]">
                   <p className="text-sm font-medium text-white truncate">{currentUser?.displayName || 'User'}</p>
