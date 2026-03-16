@@ -62,18 +62,31 @@ function TileSwapper({ style }) {
   )
 }
 
-function LocationButton({ isDark }) {
+function MapRef({ onMap }) {
   const map = useMap()
+  onMap(map)
+  return null
+}
+
+export default function Map({ spots = [], onSpotClick, onMapClick }) {
+  const [selectedCategories, setSelectedCategories] = useState(
+    CATEGORIES.map(cat => cat.id)
+  )
+  const [activeSpotId, setActiveSpotId] = useState(null)
+  const [isPinMode, setIsPinMode] = useState(false)
+  const [showFilter, setShowFilter] = useState(false)
+  const [showStyles, setShowStyles] = useState(false)
+  const [mapStyle, setMapStyle] = useState(MAP_STYLES[0])
+  const [mapInstance, setMapInstance] = useState(null)
   const [isLocating, setIsLocating] = useState(false)
 
   const handleLocate = () => {
+    if (!mapInstance) return
     setIsLocating(true)
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          map.flyTo([position.coords.latitude, position.coords.longitude], 15, {
-            duration: 1.5
-          })
+          mapInstance.flyTo([position.coords.latitude, position.coords.longitude], 15, { duration: 1.5 })
           setIsLocating(false)
         },
         () => {
@@ -87,32 +100,6 @@ function LocationButton({ isDark }) {
       setIsLocating(false)
     }
   }
-
-  return (
-    <button
-      onClick={handleLocate}
-      disabled={isLocating}
-      className={`absolute bottom-28 left-4 z-[1000] w-11 h-11 backdrop-blur-md border rounded-2xl shadow-lg transition-all flex items-center justify-center disabled:opacity-50 ${
-        isDark
-          ? 'bg-gray-900/80 border-gray-700/40 hover:bg-gray-800'
-          : 'bg-white/90 border-gray-200/60 hover:bg-white'
-      }`}
-      title="Mein Standort"
-    >
-      <Navigation className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-blue-600'} ${isLocating ? 'animate-pulse' : ''}`} />
-    </button>
-  )
-}
-
-export default function Map({ spots = [], onSpotClick, onMapClick }) {
-  const [selectedCategories, setSelectedCategories] = useState(
-    CATEGORIES.map(cat => cat.id)
-  )
-  const [activeSpotId, setActiveSpotId] = useState(null)
-  const [isPinMode, setIsPinMode] = useState(false)
-  const [showFilter, setShowFilter] = useState(false)
-  const [showStyles, setShowStyles] = useState(false)
-  const [mapStyle, setMapStyle] = useState(MAP_STYLES[0])
 
   const isDark = mapStyle.id === 'dark'
 
@@ -166,8 +153,8 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
 
       {/* Map */}
       <MapContainer
-        center={[52.52, 13.405]}
-        zoom={12}
+        center={[53.357, 10.211]}
+        zoom={13}
         className="h-full w-full"
         zoomControl={false}
       >
@@ -177,7 +164,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
           onMapClick={onMapClick}
           onPinDone={() => setIsPinMode(false)}
         />
-        <LocationButton isDark={isDark} />
+        <MapRef onMap={setMapInstance} />
 
         {filteredSpots.map(spot => (
           <SpotMarker
@@ -223,19 +210,32 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
 
       {/* Bottom Action Bar */}
       <div className="absolute bottom-6 left-4 right-4 z-[1000] flex items-end justify-between pointer-events-none">
-        {/* Filter Button */}
-        <button
-          onClick={() => { setShowFilter(true); setShowStyles(false) }}
-          className={`pointer-events-auto w-11 h-11 backdrop-blur-md border rounded-2xl shadow-lg transition-all flex items-center justify-center relative ${btnClass}`}
-          title="Filter"
-        >
-          <SlidersHorizontal className="w-5 h-5" />
-          {activeFilterCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-violet-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
+        {/* Left Controls */}
+        <div className="flex flex-col gap-2 pointer-events-auto">
+          {/* Filter Button */}
+          <button
+            onClick={() => { setShowFilter(true); setShowStyles(false) }}
+            className={`w-11 h-11 backdrop-blur-md border rounded-2xl shadow-lg transition-all flex items-center justify-center relative ${btnClass}`}
+            title="Filter"
+          >
+            <SlidersHorizontal className="w-5 h-5" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-violet-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+
+          {/* Location Button */}
+          <button
+            onClick={handleLocate}
+            disabled={isLocating}
+            className={`w-11 h-11 backdrop-blur-md border rounded-2xl shadow-lg transition-all flex items-center justify-center disabled:opacity-50 ${btnClass}`}
+            title="Mein Standort"
+          >
+            <Navigation className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-blue-600'} ${isLocating ? 'animate-pulse' : ''}`} />
+          </button>
+        </div>
 
         {/* FAB - Spot erstellen */}
         <button

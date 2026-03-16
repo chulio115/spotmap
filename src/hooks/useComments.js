@@ -10,12 +10,25 @@ export function useComments(spotId) {
     if (!spotId) return
     setLoading(true)
     try {
-      const q = query(
-        collection(db, 'spots', spotId, 'comments'),
-        orderBy('createdAt', 'desc')
-      )
-      const snapshot = await getDocs(q)
-      setComments(snapshot.docs.map(d => ({ id: d.id, ...d.data() })))
+      let snapshot
+      try {
+        const q = query(
+          collection(db, 'spots', spotId, 'comments'),
+          orderBy('createdAt', 'desc')
+        )
+        snapshot = await getDocs(q)
+      } catch {
+        // Fallback without orderBy if index/rules not ready
+        snapshot = await getDocs(collection(db, 'spots', spotId, 'comments'))
+      }
+      const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+      // Sort client-side as fallback
+      docs.sort((a, b) => {
+        const ta = a.createdAt?.toDate?.() || new Date(a.createdAt) || 0
+        const tb = b.createdAt?.toDate?.() || new Date(b.createdAt) || 0
+        return tb - ta
+      })
+      setComments(docs)
     } catch (err) {
       console.error('Error fetching comments:', err)
     } finally {

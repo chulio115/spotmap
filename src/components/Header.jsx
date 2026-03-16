@@ -13,7 +13,7 @@ export default function Header({ onViewChange, currentUser }) {
   const photoURL = currentUser?.photoURL
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.04] z-50">
+    <header className="fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.04] z-[9000]">
       <div className="flex items-center justify-between h-14 px-3 sm:px-4">
         {/* Logo */}
         <button 

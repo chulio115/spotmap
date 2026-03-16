@@ -153,18 +153,19 @@ export default function SpotDetail({
     <div className="fixed inset-0 z-[9999] flex items-end justify-center md:items-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-lg bg-gray-950 rounded-t-[28px] md:rounded-[28px] max-h-[92vh] overflow-hidden border border-white/[0.06] shadow-2xl animate-slide-up"
+        className="relative w-full max-w-lg bg-gray-950 rounded-t-[24px] md:rounded-[24px] overflow-hidden border border-white/[0.06] shadow-2xl animate-slide-up"
+        style={{ maxHeight: 'min(88vh, 88dvh)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Drag Handle */}
-        <div className="flex justify-center pt-3 pb-1 md:hidden">
+        <div className="flex justify-center pt-2.5 pb-0.5 md:hidden">
           <div className="w-10 h-1 rounded-full bg-gray-700" />
         </div>
 
         {/* Photo Gallery */}
         {photos.length > 0 && (
-          <div className="relative w-full aspect-[16/10] bg-gray-900">
-            <img src={photos[photoIndex]} alt={spot.title} className="w-full h-full object-cover" />
+          <div className="relative w-full bg-gray-900" style={{ maxHeight: '35vh' }}>
+            <img src={photos[photoIndex]} alt={spot.title} className="w-full h-full object-cover" style={{ maxHeight: '35vh' }} />
             <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 via-transparent to-black/30" />
             {photos.length > 1 && (
               <>
@@ -193,7 +194,7 @@ export default function SpotDetail({
           </div>
         )}
 
-        <div className="overflow-y-auto max-h-[calc(92vh-120px)]">
+        <div className="overflow-y-auto" style={{ maxHeight: photos.length > 0 ? 'calc(88vh - 35vh - 40px)' : 'calc(88vh - 40px)' }}>
           {/* Title + Category */}
           <div className="px-5 pt-4 pb-2">
             {!isEditing ? (
@@ -399,7 +400,7 @@ export default function SpotDetail({
                       </div>
                       {(comment.authorUid === currentUser?.uid || isAdmin) && (
                         <button onClick={() => deleteComment(comment.id)}
-                          className="p-1 text-gray-700 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0">
+                          className="p-1 text-gray-700 hover:text-red-400 transition-colors opacity-40 hover:opacity-100 flex-shrink-0">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       )}
