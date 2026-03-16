@@ -11,12 +11,21 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Spots: Jeder eingeloggte User darf lesen/erstellen, Owner + Admin dürfen ändern/löschen
+    // Spots: Jeder eingeloggte User darf lesen/erstellen/updaten, nur Owner+Admin dürfen löschen
     match /spots/{spotId} {
       allow read: if isLoggedIn();
       allow create: if isLoggedIn();
-      allow update, delete: if isLoggedIn() && 
+      allow update: if isLoggedIn();
+      allow delete: if isLoggedIn() && 
         (resource.data.createdBy == request.auth.uid || isAdmin());
+
+      // Kommentare: Jeder eingeloggte User darf lesen/erstellen, eigene löschen + Admin
+      match /comments/{commentId} {
+        allow read: if isLoggedIn();
+        allow create: if isLoggedIn();
+        allow delete: if isLoggedIn() && 
+          (resource.data.authorUid == request.auth.uid || isAdmin());
+      }
     }
 
     // Nur Admin darf allowed_emails schreiben, alle eingeloggten User dürfen lesen

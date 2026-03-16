@@ -41,9 +41,11 @@ export function useSpots() {
         lat: spotData.lat,
         lng: spotData.lng,
         photos: spotData.photos || [],
+        visitors: [],
         createdBy: user.uid,
         createdByEmail: user.email,
         createdByName: user.displayName || '',
+        createdByPhoto: user.photoURL || '',
         createdAt: serverTimestamp()
       })
       
@@ -55,9 +57,11 @@ export function useSpots() {
         lat: spotData.lat,
         lng: spotData.lng,
         photos: spotData.photos || [],
+        visitors: [],
         createdBy: user.uid,
         createdByEmail: user.email,
         createdByName: user.displayName || '',
+        createdByPhoto: user.photoURL || '',
         createdAt: new Date()
       }
       
@@ -85,6 +89,61 @@ export function useSpots() {
     }
   }
 
+  const addVisitor = async (spotId, user) => {
+    try {
+      const spot = spots.find(s => s.id === spotId)
+      const visitors = spot?.visitors || []
+      if (visitors.some(v => v.uid === user.uid)) return // already visited
+
+      const newVisitor = {
+        uid: user.uid,
+        name: user.displayName || '',
+        email: user.email,
+        photo: user.photoURL || '',
+        visitedAt: new Date().toISOString()
+      }
+      const updatedVisitors = [...visitors, newVisitor]
+      const spotRef = doc(db, 'spots', spotId)
+      await updateDoc(spotRef, { visitors: updatedVisitors })
+      setSpots(prev => prev.map(s =>
+        s.id === spotId ? { ...s, visitors: updatedVisitors } : s
+      ))
+    } catch (err) {
+      console.error('Error adding visitor:', err)
+      throw err
+    }
+  }
+
+  const removeVisitor = async (spotId, uid) => {
+    try {
+      const spot = spots.find(s => s.id === spotId)
+      const updatedVisitors = (spot?.visitors || []).filter(v => v.uid !== uid)
+      const spotRef = doc(db, 'spots', spotId)
+      await updateDoc(spotRef, { visitors: updatedVisitors })
+      setSpots(prev => prev.map(s =>
+        s.id === spotId ? { ...s, visitors: updatedVisitors } : s
+      ))
+    } catch (err) {
+      console.error('Error removing visitor:', err)
+      throw err
+    }
+  }
+
+  const addPhotosToSpot = async (spotId, newPhotoUrls) => {
+    try {
+      const spot = spots.find(s => s.id === spotId)
+      const updatedPhotos = [...(spot?.photos || []), ...newPhotoUrls]
+      const spotRef = doc(db, 'spots', spotId)
+      await updateDoc(spotRef, { photos: updatedPhotos })
+      setSpots(prev => prev.map(s =>
+        s.id === spotId ? { ...s, photos: updatedPhotos } : s
+      ))
+    } catch (err) {
+      console.error('Error adding photos:', err)
+      throw err
+    }
+  }
+
   const deleteSpot = async (spotId) => {
     try {
       await deleteDoc(doc(db, 'spots', spotId))
@@ -103,6 +162,9 @@ export function useSpots() {
     createSpot,
     updateSpot,
     deleteSpot,
+    addVisitor,
+    removeVisitor,
+    addPhotosToSpot,
     refreshSpots: fetchSpots
   }
 }

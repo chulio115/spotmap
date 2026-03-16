@@ -13,7 +13,7 @@ import './index.css'
 
 function AppContent() {
   const { user, logout } = useAuth()
-  const { spots, loading, createSpot, deleteSpot } = useSpots()
+  const { spots, loading, createSpot, deleteSpot, updateSpot, addVisitor, removeVisitor, addPhotosToSpot } = useSpots()
   const location = useLocation()
   const [activeView, setActiveView] = useState('map')
   const [showSpotForm, setShowSpotForm] = useState(false)
@@ -25,6 +25,9 @@ function AppContent() {
   const handleSpotClick = (spot) => {
     setSelectedSpot(spot)
   }
+
+  // Keep selectedSpot in sync with spots state (for live updates)
+  const liveSpot = selectedSpot ? spots.find(s => s.id === selectedSpot.id) || selectedSpot : null
 
   const handleMapClick = (latlng) => {
     if (!user) return
@@ -123,12 +126,16 @@ function AppContent() {
       )}
 
       {/* SpotDetail Modal */}
-      {selectedSpot && (
+      {liveSpot && (
         <SpotDetail
-          spot={selectedSpot}
+          spot={liveSpot}
           currentUser={user}
           onClose={() => setSelectedSpot(null)}
           onDelete={handleSpotDelete}
+          onUpdateSpot={updateSpot}
+          onAddVisitor={addVisitor}
+          onRemoveVisitor={removeVisitor}
+          onAddPhotos={addPhotosToSpot}
         />
       )}
     </div>
