@@ -1,19 +1,24 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { X, MapPin, Camera, Image as ImageIcon, Loader2 } from 'lucide-react'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { storage } from '../lib/firebase'
 import { CATEGORIES } from '../constants/categories'
 
-function compressImage(file, maxWidth = 1200, quality = 0.8) {
+function compressImageToBase64(file, maxWidth = 800, quality = 0.6) {
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => resolve(file), 15000)
+    const timeout = setTimeout(() => {
+      // Fallback: read file as-is
+      const reader = new FileReader()
+      reader.onload = (e) => resolve(e.target.result)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(file)
+    }, 15000)
+
     try {
       const reader = new FileReader()
-      reader.onerror = () => { clearTimeout(timeout); resolve(file) }
+      reader.onerror = () => { clearTimeout(timeout); resolve(null) }
       reader.onload = (e) => {
         const img = new window.Image()
-        img.onerror = () => { clearTimeout(timeout); resolve(file) }
+        img.onerror = () => { clearTimeout(timeout); resolve(e.target.result) }
         img.onload = () => {
           try {
             const canvas = document.createElement('canvas')
@@ -24,19 +29,13 @@ function compressImage(file, maxWidth = 1200, quality = 0.8) {
             }
             canvas.width = width
             canvas.height = height
-            const ctx = canvas.getContext('2d')
-            ctx.drawImage(img, 0, 0, width, height)
-            canvas.toBlob(
-              (blob) => {
-                clearTimeout(timeout)
-                resolve(blob || file)
-              },
-              'image/jpeg',
-              quality
-            )
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+            const dataUrl = canvas.toDataURL('image/jpeg', quality)
+            clearTimeout(timeout)
+            resolve(dataUrl)
           } catch {
             clearTimeout(timeout)
-            resolve(file)
+            resolve(e.target.result)
           }
         }
         img.src = e.target.result
@@ -44,7 +43,7 @@ function compressImage(file, maxWidth = 1200, quality = 0.8) {
       reader.readAsDataURL(file)
     } catch {
       clearTimeout(timeout)
-      resolve(file)
+      resolve(null)
     }
   })
 }
@@ -84,19 +83,6 @@ export default function SpotForm({ position, onClose, onSubmit }) {
     })
   }
 
-  const uploadPhotos = async (spotId) => {
-    const urls = []
-    for (const photo of photos) {
-      const compressed = await compressImage(photo.file)
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
-      const storageRef = ref(storage, `spots/${spotId}/${fileName}`)
-      await uploadBytes(storageRef, compressed)
-      const url = await getDownloadURL(storageRef)
-      urls.push(url)
-    }
-    return urls
-  }
-
   const [submitError, setSubmitError] = useState('')
 
   const handleSubmit = async (e) => {
@@ -107,12 +93,14 @@ export default function SpotForm({ position, onClose, onSubmit }) {
     setIsSubmitting(true)
     setSubmitError('')
     try {
-      const tempId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
-      let photoUrls = []
+      let photoDataUrls = []
       if (photos.length > 0) {
-        photoUrls = await uploadPhotos(tempId)
+        for (const photo of photos) {
+          const dataUrl = await compressImageToBase64(photo.file)
+          if (dataUrl) photoDataUrls.push(dataUrl)
+        }
       }
-      await onSubmit({ ...formData, photos: photoUrls })
+      await onSubmit({ ...formData, photos: photoDataUrls })
     } catch (error) {
       console.error('Fehler beim Erstellen des Spots:', error)
       setSubmitError(error.message || 'Spot konnte nicht erstellt werden')
