@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { X, MapPin, Camera, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { storage } from '../lib/firebase'
@@ -99,7 +100,7 @@ export default function SpotForm({ position, onClose, onSubmit }) {
   const selectedCategory = CATEGORIES.find(c => c.id === formData.category)
   const canProceed = step === 1 ? formData.category !== '' : formData.title.trim() !== ''
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-end justify-center md:items-center" onClick={onClose}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
@@ -308,6 +309,7 @@ export default function SpotForm({ position, onClose, onSubmit }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

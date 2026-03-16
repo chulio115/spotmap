@@ -1,11 +1,12 @@
 import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { getCategoryById, CATEGORIES } from '../constants/categories'
 import { useComments } from '../hooks/useComments'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { storage } from '../lib/firebase'
 import {
   X, MapPin, ExternalLink, Share2, Trash2,
-  ChevronLeft, ChevronRight, Camera, Image as ImageIcon,
+  ChevronLeft, ChevronRight, Camera,
   MessageCircle, Send, CheckCircle2, Edit3, Loader2, Users
 } from 'lucide-react'
 
@@ -148,7 +149,7 @@ export default function SpotDetail({
 
   if (!category) return null
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-end justify-center md:items-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div
@@ -424,6 +425,7 @@ export default function SpotDetail({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
