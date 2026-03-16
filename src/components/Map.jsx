@@ -70,7 +70,29 @@ function MapRef({ mapRef }) {
   return null
 }
 
-export default function Map({ spots = [], onSpotClick, onMapClick }) {
+function FlyToUserLocation() {
+  const map = useMap()
+  const hasFlown = useRef(false)
+
+  useEffect(() => {
+    if (hasFlown.current) return
+    hasFlown.current = true
+
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          map.flyTo([pos.coords.latitude, pos.coords.longitude], 14, { duration: 1.2 })
+        },
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000 }
+      )
+    }
+  }, [map])
+
+  return null
+}
+
+export default function Map({ spots = [], onSpotClick, onMapClick, navigateToSpot, onNavigateDone }) {
   const [selectedCategories, setSelectedCategories] = useState(
     CATEGORIES.map(cat => cat.id)
   )
@@ -81,6 +103,18 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
   const [mapStyle, setMapStyle] = useState(MAP_STYLES[0])
   const mapRef = useRef(null)
   const [isLocating, setIsLocating] = useState(false)
+
+  useEffect(() => {
+    if (!navigateToSpot) return
+    const timer = setTimeout(() => {
+      setActiveSpotId(navigateToSpot.id)
+      if (mapRef.current) {
+        mapRef.current.flyTo([navigateToSpot.lat, navigateToSpot.lng], 16, { duration: 1.5 })
+      }
+      onNavigateDone?.()
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [navigateToSpot]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLocate = useCallback(() => {
     if (!mapRef.current) return
@@ -167,6 +201,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
           onPinDone={() => setIsPinMode(false)}
         />
         <MapRef mapRef={mapRef} />
+        <FlyToUserLocation />
 
         {filteredSpots.map(spot => (
           <SpotMarker

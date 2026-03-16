@@ -1,6 +1,6 @@
 import Map from '../components/Map'
 
-export default function MapPage({ spots, loading, onSpotClick, onMapClick }) {
+export default function MapPage({ spots, loading, onSpotClick, onMapClick, navigateToSpot, onNavigateDone }) {
   return (
     <div
       className="w-full fixed left-0 right-0 bottom-0"
@@ -11,7 +11,7 @@ export default function MapPage({ spots, loading, onSpotClick, onMapClick }) {
           <div className="text-gray-400 text-sm animate-pulse">Spots werden geladen...</div>
         </div>
       ) : (
-        <Map spots={spots} onSpotClick={onSpotClick} onMapClick={onMapClick} />
+        <Map spots={spots} onSpotClick={onSpotClick} onMapClick={onMapClick} navigateToSpot={navigateToSpot} onNavigateDone={onNavigateDone} />
       )}
     </div>
   )

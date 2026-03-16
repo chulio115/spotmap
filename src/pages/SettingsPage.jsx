@@ -5,9 +5,9 @@ import { db } from '../lib/firebase'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { getCategoryById } from '../constants/categories'
-import { ArrowLeft, User, MapPin, Shield, Trash2, UserPlus, Mail, ChevronRight } from 'lucide-react'
+import { ArrowLeft, User, MapPin, Shield, Trash2, UserPlus, Mail, ChevronRight, Navigation } from 'lucide-react'
 
-export default function SettingsPage({ spots = [], onDeleteSpot }) {
+export default function SettingsPage({ spots = [], onDeleteSpot, onSpotNavigate }) {
   const { user, isAdmin, logout } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('profile')
@@ -219,6 +219,9 @@ export default function SettingsPage({ spots = [], onDeleteSpot }) {
                       <p className="text-white text-sm font-medium truncate">{spot.title}</p>
                       <p className="text-gray-600 text-xs">{formatDate(spot.createdAt)}</p>
                     </div>
+                    <button onClick={() => { onSpotNavigate?.(spot); navigate('/map') }} className="p-2 text-gray-600 hover:text-violet-400 transition-colors" title="Zum Spot springen">
+                      <Navigation className="w-4 h-4" />
+                    </button>
                     <button onClick={() => handleDeleteSpot(spot.id)} className="p-2 text-gray-600 hover:text-red-400 transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -232,6 +235,22 @@ export default function SettingsPage({ spots = [], onDeleteSpot }) {
         {/* Admin Tab */}
         {activeTab === 'admin' && isAdmin && (
           <div className="space-y-4">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-white/[0.03] rounded-2xl p-3 border border-white/[0.04] text-center">
+                <p className="text-2xl font-bold text-white">{allSpots.length}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Spots</p>
+              </div>
+              <div className="bg-white/[0.03] rounded-2xl p-3 border border-white/[0.04] text-center">
+                <p className="text-2xl font-bold text-white">{allowedEmails.length}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Mitglieder</p>
+              </div>
+              <div className="bg-white/[0.03] rounded-2xl p-3 border border-white/[0.04] text-center">
+                <p className="text-2xl font-bold text-white">{new Set(allSpots.map(s => s.createdBy)).size}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Autoren</p>
+              </div>
+            </div>
+
             {/* Invite */}
             <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/[0.04]">
               <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
@@ -304,6 +323,9 @@ export default function SettingsPage({ spots = [], onDeleteSpot }) {
                       <p className="text-white text-sm font-medium truncate">{spot.title}</p>
                       <p className="text-gray-600 text-xs">{spot.createdByEmail || '?'} · {formatDate(spot.createdAt)}</p>
                     </div>
+                    <button onClick={() => { onSpotNavigate?.(spot); navigate('/map') }} className="p-2 text-gray-600 hover:text-violet-400 transition-colors" title="Zum Spot springen">
+                      <Navigation className="w-4 h-4" />
+                    </button>
                     <button onClick={() => handleDeleteSpot(spot.id)} className="p-2 text-gray-600 hover:text-red-400 transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>

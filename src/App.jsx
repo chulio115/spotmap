@@ -19,6 +19,7 @@ function AppContent() {
   const [showSpotForm, setShowSpotForm] = useState(false)
   const [selectedSpot, setSelectedSpot] = useState(null)
   const [formPosition, setFormPosition] = useState(null)
+  const [navigateToSpot, setNavigateToSpot] = useState(null)
 
   const isLoginPage = location.pathname === '/login'
 
@@ -81,6 +82,8 @@ function AppContent() {
                 loading={loading}
                 onSpotClick={handleSpotClick}
                 onMapClick={handleMapClick}
+                navigateToSpot={navigateToSpot}
+                onNavigateDone={() => setNavigateToSpot(null)}
               />
             ) : (
               <Navigate to="/login" replace />
@@ -108,6 +111,7 @@ function AppContent() {
               <SettingsPage
                 spots={spots}
                 onDeleteSpot={deleteSpot}
+                onSpotNavigate={(spot) => setNavigateToSpot(spot)}
               />
             ) : (
               <Navigate to="/login" replace />
