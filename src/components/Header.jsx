@@ -59,7 +59,10 @@ export default function Header({ onViewChange, currentUser, onLogout }) {
         {/* User Avatar / Menu */}
         <div className="relative">
           <button 
-            onClick={() => setShowMenu(!showMenu)}
+            onClick={() => {
+              console.log('👤 Avatar clicked, showMenu:', showMenu, '→', !showMenu)
+              setShowMenu(!showMenu)
+            }}
             className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center ring-2 ring-white/[0.06] hover:ring-violet-500/30 transition-all"
           >
             {photoURL ? (
@@ -73,6 +76,7 @@ export default function Header({ onViewChange, currentUser, onLogout }) {
 
           {showMenu && (
             <>
+              {console.log('📋 Rendering dropdown menu')}
               <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
               <div className="absolute right-0 mt-2 z-50 bg-gray-900/95 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-2xl overflow-hidden min-w-[200px]">
                 {/* User Info */}
