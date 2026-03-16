@@ -6,7 +6,6 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   GoogleAuthProvider,
-  OAuthProvider,
   signInWithPopup
 } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
@@ -133,33 +132,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const signInWithApple = async () => {
-    try {
-      const provider = new OAuthProvider('apple.com')
-      provider.addScope('email')
-      provider.addScope('name')
-      const result = await signInWithPopup(auth, provider)
-      const email = result.user.email
-
-      const allowedEmailDoc = await getDoc(doc(db, 'allowed_emails', email))
-      if (!allowedEmailDoc.exists()) {
-        await signOut(auth)
-        throw new Error('Du wurdest noch nicht eingeladen. Kontaktiere den Admin.')
-      }
-
-      return { success: true, user: result.user }
-    } catch (error) {
-      console.error('Error signing in with Apple:', error)
-      if (error.code === 'auth/popup-closed-by-user') {
-        throw new Error('Login abgebrochen.')
-      } else if (error.message.includes('nicht eingeladen')) {
-        throw error
-      } else {
-        throw new Error('Apple Login fehlgeschlagen: ' + error.message)
-      }
-    }
-  }
-
   const logout = async () => {
     try {
       await signOut(auth)
@@ -175,7 +147,6 @@ export function AuthProvider({ children }) {
     isAdmin,
     sendMagicLink,
     signInWithGoogle,
-    signInWithApple,
     logout,
   }
 

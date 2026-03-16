@@ -9,15 +9,14 @@ export default function LoginPage() {
   const [showEmailForm, setShowEmailForm] = useState(false)
   const [email, setEmail] = useState('')
   const [magicLinkSent, setMagicLinkSent] = useState(false)
-  const { signInWithGoogle, signInWithApple, sendMagicLink } = useAuth()
+  const { signInWithGoogle, sendMagicLink } = useAuth()
 
-  const handleAuth = async (method) => {
-    setIsLoading(method)
+  const handleGoogleSignIn = async () => {
+    setIsLoading('google')
     setMessage('')
     setMessageType('')
     try {
-      if (method === 'google') await signInWithGoogle()
-      else if (method === 'apple') await signInWithApple()
+      await signInWithGoogle()
     } catch (error) {
       setMessageType('error')
       setMessage(error.message)
@@ -117,7 +116,7 @@ export default function LoginPage() {
             <div className="space-y-3">
               {/* Google */}
               <button
-                onClick={() => handleAuth('google')}
+                onClick={handleGoogleSignIn}
                 disabled={!!isLoading}
                 className="w-full px-4 py-3.5 bg-white text-gray-800 font-semibold rounded-2xl hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center justify-center gap-3 shadow-sm active:scale-[0.98]"
               >
@@ -132,22 +131,6 @@ export default function LoginPage() {
                   </svg>
                 )}
                 Mit Google anmelden
-              </button>
-
-              {/* Apple */}
-              <button
-                onClick={() => handleAuth('apple')}
-                disabled={!!isLoading}
-                className="w-full px-4 py-3.5 bg-white/[0.06] text-white font-semibold rounded-2xl hover:bg-white/[0.1] transition-all disabled:opacity-50 flex items-center justify-center gap-3 border border-white/[0.08] active:scale-[0.98]"
-              >
-                {isLoading === 'apple' ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-2.12 4.53-3.74 4.25z"/>
-                  </svg>
-                )}
-                Mit Apple anmelden
               </button>
 
               {/* Divider */}
