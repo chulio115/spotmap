@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { CATEGORIES } from '../constants/categories'
 
 export default function SpotForm({ position, onClose, onSubmit }) {
@@ -9,10 +9,7 @@ export default function SpotForm({ position, onClose, onSubmit }) {
     lat: position.lat,
     lng: position.lng
   })
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [previewUrl, setPreviewUrl] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const fileInputRef = useRef(null)
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -20,15 +17,6 @@ export default function SpotForm({ position, onClose, onSubmit }) {
       ...prev,
       [name]: value
     }))
-  }
-
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setSelectedFile(file)
-      const url = URL.createObjectURL(file)
-      setPreviewUrl(url)
-    }
   }
 
   const handleSubmit = async (e) => {
@@ -42,24 +30,9 @@ export default function SpotForm({ position, onClose, onSubmit }) {
     setIsSubmitting(true)
     
     try {
-      // Hier wird später die Supabase-Logik implementiert
-      const newSpot = {
-        ...formData,
-        id: Date.now().toString(), // Mock ID
-        created_by: 'demo@user.de', // Mock User
-        created_at: new Date().toISOString()
-      }
-
-      if (selectedFile) {
-        // Hier wird später der Foto-Upload implementiert
-        console.log('Foto würde hochgeladen:', selectedFile.name)
-      }
-
-      onSubmit(newSpot)
-      onClose()
+      await onSubmit(formData)
     } catch (error) {
       console.error('Fehler beim Erstellen des Spots:', error)
-      alert('Spot konnte nicht erstellt werden')
     } finally {
       setIsSubmitting(false)
     }
@@ -149,58 +122,6 @@ export default function SpotForm({ position, onClose, onSubmit }) {
               className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Was macht diesen Spot besonders?"
             />
-          </div>
-
-          {/* Photo Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Foto (optional)
-            </label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            
-            {!previewUrl ? (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full p-4 border-2 border-dashed border-gray-600 rounded-lg hover:border-gray-500 transition-colors"
-              >
-                <div className="flex flex-col items-center space-y-2">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  <span className="text-gray-400">Foto hochladen</span>
-                </div>
-              </button>
-            ) : (
-              <div className="relative">
-                <img
-                  src={previewUrl}
-                  alt="Vorschau"
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedFile(null)
-                    setPreviewUrl('')
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = ''
-                    }
-                  }}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Submit Buttons */}

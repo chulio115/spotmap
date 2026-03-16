@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/AuthContext'
+import { useSpots } from './hooks/useSpots'
 import Header from './components/Header'
 import MapPage from './pages/MapPage'
 import FeedPage from './pages/FeedPage'
@@ -8,125 +9,129 @@ import LoginPage from './pages/LoginPage'
 import AdminPage from './pages/AdminPage'
 import SpotForm from './components/SpotForm'
 import SpotDetail from './components/SpotDetail'
-import PhotoGallery from './components/PhotoGallery'
 import './index.css'
 
-function App() {
+function AppContent() {
   const { user, logout, isAdmin } = useAuth()
+  const { spots, loading, createSpot, deleteSpot } = useSpots()
+  const location = useLocation()
   const [activeView, setActiveView] = useState('map')
-  const [notificationCount, setNotificationCount] = useState(3)
   const [showSpotForm, setShowSpotForm] = useState(false)
   const [selectedSpot, setSelectedSpot] = useState(null)
-  const [showPhotoGallery, setShowPhotoGallery] = useState(false)
   const [formPosition, setFormPosition] = useState(null)
+
+  const isLoginPage = location.pathname === '/login'
 
   const handleSpotClick = (spot) => {
     setSelectedSpot(spot)
   }
 
   const handleMapClick = (latlng) => {
-    if (!user) {
-      alert('Bitte melde dich an um Spots zu erstellen')
-      return
-    }
+    if (!user) return
     setFormPosition(latlng)
     setShowSpotForm(true)
   }
 
-  const handleSpotCreate = (newSpot) => {
-    // Hier wird später die Supabase Logik implementiert
-    console.log('Neuer Spot erstellt:', newSpot)
-    setNotificationCount(prev => prev + 1)
+  const handleSpotCreate = async (spotData) => {
+    if (!user) return
+    try {
+      await createSpot(spotData, user)
+      setShowSpotForm(false)
+      setFormPosition(null)
+    } catch (err) {
+      alert('Spot konnte nicht erstellt werden: ' + err.message)
+    }
   }
 
-  const handlePhotoAdd = (spotId, file) => {
-    // Hier wird später die Supabase Logik implementiert
-    console.log('Foto hinzugefügt:', spotId, file.name)
+  const handleSpotDelete = async (spotId) => {
+    if (!window.confirm('Spot wirklich löschen?')) return
+    try {
+      await deleteSpot(spotId)
+      setSelectedSpot(null)
+    } catch (err) {
+      alert('Spot konnte nicht gelöscht werden: ' + err.message)
+    }
   }
-
-  const handleNotificationClick = () => {
-    setNotificationCount(0)
-    // Hier wird später die Notification-Logik implementiert
-  }
-
-  // Wenn nicht eingeloggt, redirect zu /login via Router
 
   return (
-    <Router>
-      <div className="h-screen w-full bg-gray-900">
-        <Header 
+    <div className="h-screen w-full bg-gray-900">
+      {!isLoginPage && user && (
+        <Header
           activeView={activeView}
           onViewChange={setActiveView}
-          notificationCount={notificationCount}
+          notificationCount={0}
           currentUser={user}
           onLogout={logout}
-          onNotificationClick={handleNotificationClick}
+          onNotificationClick={() => {}}
         />
-        
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Navigate to="/map" replace />} />
-          <Route 
-            path="/map" 
-            element={
-              user ? (
-                <MapPage 
-                  onSpotClick={handleSpotClick}
-                  onMapClick={handleMapClick}
-                />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-          <Route 
-            path="/feed" 
-            element={
-              user ? (
-                <FeedPage 
-                  onSpotClick={handleSpotClick}
-                />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-          <Route 
-            path="/admin" 
-            element={
-              user && isAdmin ? (
-                <AdminPage />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-        </Routes>
+      )}
 
-        {/* Modals */}
-        {showSpotForm && formPosition && (
-          <SpotForm
-            position={formPosition}
-            onClose={() => setShowSpotForm(false)}
-            onSubmit={handleSpotCreate}
-          />
-        )}
+      <Routes>
+        <Route path="/login" element={user ? <Navigate to="/map" replace /> : <LoginPage />} />
+        <Route path="/" element={<Navigate to="/map" replace />} />
+        <Route
+          path="/map"
+          element={
+            user ? (
+              <MapPage
+                spots={spots}
+                loading={loading}
+                onSpotClick={handleSpotClick}
+                onMapClick={handleMapClick}
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/feed"
+          element={
+            user ? (
+              <FeedPage
+                spots={spots}
+                loading={loading}
+                onSpotClick={handleSpotClick}
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            user && isAdmin ? <AdminPage /> : <Navigate to="/login" replace />
+          }
+        />
+      </Routes>
 
-        {selectedSpot && (
-          <SpotDetail
-            spot={selectedSpot}
-            onClose={() => setSelectedSpot(null)}
-            onPhotoAdd={handlePhotoAdd}
-          />
-        )}
+      {/* SpotForm Modal */}
+      {showSpotForm && formPosition && (
+        <SpotForm
+          position={formPosition}
+          onClose={() => { setShowSpotForm(false); setFormPosition(null) }}
+          onSubmit={handleSpotCreate}
+        />
+      )}
 
-        {showPhotoGallery && (
-          <PhotoGallery
-            onClose={() => setShowPhotoGallery(false)}
-            onPhotoAdd={handlePhotoAdd}
-          />
-        )}
-      </div>
+      {/* SpotDetail Modal */}
+      {selectedSpot && (
+        <SpotDetail
+          spot={selectedSpot}
+          currentUser={user}
+          onClose={() => setSelectedSpot(null)}
+          onDelete={handleSpotDelete}
+        />
+      )}
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   )
 }

@@ -1,20 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const [messageType, setMessageType] = useState('') // 'success' or 'error'
+  const [messageType, setMessageType] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
-  const { sendMagicLink, user } = useAuth()
-
-  // Redirect if already logged in
-  if (user) {
-    navigate('/')
-    return null
-  }
+  const { sendMagicLink } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()

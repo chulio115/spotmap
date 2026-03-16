@@ -16,11 +16,11 @@ service cloud.firestore {
       }
     }
 
-    // Nur Admin darf allowed_emails schreiben
+    // Nur Admin darf allowed_emails schreiben, alle eingeloggten User dürfen lesen
     match /allowed_emails/{email} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && 
-        request.auth.token.email == 'admin@spotmap.de';
+        request.auth.token.email == 'juliusschulze@me.com';
     }
 
     // Jeder User darf nur seinen eigenen last_seen Eintrag schreiben
