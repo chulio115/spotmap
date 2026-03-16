@@ -27,7 +27,12 @@ function AppContent() {
   }
 
   const handleMapClick = (latlng) => {
-    if (!user) return
+    console.log('🗺️ Map clicked:', latlng)
+    if (!user) {
+      console.log('❌ No user, ignoring click')
+      return
+    }
+    console.log('✅ Opening SpotForm')
     setFormPosition(latlng)
     setShowSpotForm(true)
   }
