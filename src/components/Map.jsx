@@ -1,5 +1,5 @@
 import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { MapPin, Navigation, SlidersHorizontal, X, Layers, Plus } from 'lucide-react'
 import SpotMarker from './SpotMarker'
 import { CATEGORIES } from '../constants/categories'
@@ -62,9 +62,11 @@ function TileSwapper({ style }) {
   )
 }
 
-function MapRef({ onMap }) {
+function MapRef({ mapRef }) {
   const map = useMap()
-  onMap(map)
+  useEffect(() => {
+    mapRef.current = map
+  }, [map, mapRef])
   return null
 }
 
@@ -77,16 +79,16 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
   const [showFilter, setShowFilter] = useState(false)
   const [showStyles, setShowStyles] = useState(false)
   const [mapStyle, setMapStyle] = useState(MAP_STYLES[0])
-  const [mapInstance, setMapInstance] = useState(null)
+  const mapRef = useRef(null)
   const [isLocating, setIsLocating] = useState(false)
 
-  const handleLocate = () => {
-    if (!mapInstance) return
+  const handleLocate = useCallback(() => {
+    if (!mapRef.current) return
     setIsLocating(true)
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          mapInstance.flyTo([position.coords.latitude, position.coords.longitude], 15, { duration: 1.5 })
+          mapRef.current?.flyTo([position.coords.latitude, position.coords.longitude], 15, { duration: 1.5 })
           setIsLocating(false)
         },
         () => {
@@ -99,7 +101,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
       alert('Geolocation wird nicht unterstützt')
       setIsLocating(false)
     }
-  }
+  }, [])
 
   const isDark = mapStyle.id === 'dark'
 
@@ -164,7 +166,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
           onMapClick={onMapClick}
           onPinDone={() => setIsPinMode(false)}
         />
-        <MapRef onMap={setMapInstance} />
+        <MapRef mapRef={mapRef} />
 
         {filteredSpots.map(spot => (
           <SpotMarker
@@ -177,7 +179,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
       </MapContainer>
 
       {/* Top-Right Controls: Map Style Switcher */}
-      <div className="absolute top-4 right-4 z-[1000]">
+      <div className="absolute top-3 right-3 z-[1000]">
         <button
           onClick={() => { setShowStyles(!showStyles); setShowFilter(false) }}
           className={`w-11 h-11 backdrop-blur-md border rounded-2xl shadow-lg transition-all flex items-center justify-center ${btnClass}`}
@@ -209,7 +211,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="absolute bottom-6 left-4 right-4 z-[1000] flex items-end justify-between pointer-events-none">
+      <div className="absolute left-4 right-4 z-[1000] flex items-end justify-between pointer-events-none" style={{ bottom: 'max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))' }}>
         {/* Left Controls */}
         <div className="flex flex-col gap-2 pointer-events-auto">
           {/* Filter Button */}

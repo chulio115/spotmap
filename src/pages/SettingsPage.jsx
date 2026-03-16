@@ -119,7 +119,7 @@ export default function SettingsPage({ spots = [], onDeleteSpot }) {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-950 pt-14">
+    <div className="min-h-screen bg-gray-950" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
       <div className="max-w-lg mx-auto px-4 pb-8">
         {/* Back + Title */}
         <div className="flex items-center gap-3 pt-5 pb-4">

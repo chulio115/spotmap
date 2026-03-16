@@ -17,7 +17,7 @@ export default function FeedPage({ spots = [], loading, onSpotClick }) {
   }
 
   return (
-    <div className="pt-14 pb-6 min-h-screen bg-gradient-to-b from-gray-950 to-gray-900">
+    <div className="pb-6 min-h-screen bg-gradient-to-b from-gray-950 to-gray-900" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
       <div className="max-w-lg mx-auto px-4">
         {/* Header */}
         <div className="pt-5 pb-4">

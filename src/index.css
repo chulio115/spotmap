@@ -47,13 +47,22 @@
     margin: 0;
     padding: 0;
   }
+
+  /* Viewport with safe area support */
+  @supports (padding: env(safe-area-inset-bottom)) {
+    body {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
 }
 
 @layer components {
-  /* Leaflet Map Styling */
+  /* Leaflet Map Styling — force low stacking context so header stays above */
   .leaflet-container {
     background: var(--bg-primary);
     font-family: 'Inter', system-ui, sans-serif;
+    z-index: 0 !important;
+    isolation: isolate;
   }
   
   /* Zoom Controls - Glassmorphism */
@@ -95,14 +104,20 @@
     color: var(--text-muted) !important;
   }
   
-  /* Custom Marker Animations */
+  /* Custom Marker — ensure clicks work */
   .custom-marker {
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto !important;
+    cursor: pointer !important;
   }
   
   .custom-marker:hover {
     transform: scale(1.15);
     z-index: 1000 !important;
+  }
+
+  .custom-marker * {
+    pointer-events: none;
   }
   
   /* Marker Cluster Styling */
