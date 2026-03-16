@@ -8,6 +8,10 @@ export default function Header({ onViewChange, currentUser, onLogout }) {
   const isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL
   const [showMenu, setShowMenu] = useState(false)
 
+  console.log('👤 Header: currentUser.email =', currentUser?.email)
+  console.log('🔑 Header: VITE_ADMIN_EMAIL =', import.meta.env.VITE_ADMIN_EMAIL)
+  console.log('🛡️ Header: isAdmin =', isAdmin)
+
   const handleNavClick = (view) => {
     onViewChange(view)
     navigate(`/${view}`)
