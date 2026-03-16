@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Settings, LogOut } from 'lucide-react'
+import { Settings } from 'lucide-react'
 
-export default function Header({ onViewChange, onLogout }) {
+export default function Header({ onViewChange, currentUser }) {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -10,27 +10,21 @@ export default function Header({ onViewChange, onLogout }) {
     navigate(`/${view}`)
   }
 
+  const photoURL = currentUser?.photoURL
+
   return (
     <header className="fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.04] z-50">
       <div className="flex items-center justify-between h-14 px-3 sm:px-4">
-        {/* Logo + Settings */}
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => handleNavClick('map')}
-            className="text-base font-bold text-white hover:text-gray-300 transition-colors flex-shrink-0 flex items-center gap-1.5"
-          >
-            <span className="text-lg">🗺️</span>
-            <span className="hidden sm:inline">SpotMap</span>
-          </button>
-          
-          <button
-            onClick={() => navigate('/admin')}
-            className="p-1.5 text-gray-500 hover:text-violet-400 transition-colors"
-            title="Einstellungen"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Logo */}
+        <button 
+          onClick={() => handleNavClick('map')}
+          className="flex items-center gap-2 flex-shrink-0"
+        >
+          <div className="w-7 h-7 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center shadow-md shadow-violet-500/20">
+            <span className="text-sm">📍</span>
+          </div>
+          <span className="text-base font-bold text-white tracking-tight hidden sm:inline">SpotMap</span>
+        </button>
 
         {/* Navigation - Pill Style */}
         <nav className="flex bg-white/[0.04] rounded-xl p-0.5">
@@ -56,13 +50,20 @@ export default function Header({ onViewChange, onLogout }) {
           </button>
         </nav>
 
-        {/* Logout Button */}
+        {/* Settings / Profile */}
         <button
-          onClick={onLogout}
-          className="p-2 text-gray-500 hover:text-red-400 transition-colors"
-          title="Abmelden"
+          onClick={() => navigate('/settings')}
+          className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center transition-all ${
+            location.pathname === '/settings'
+              ? 'ring-2 ring-violet-500'
+              : 'ring-2 ring-white/[0.06] hover:ring-violet-500/40'
+          }`}
         >
-          <LogOut className="w-4 h-4" />
+          {photoURL ? (
+            <img src={photoURL} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          ) : (
+            <Settings className="w-4 h-4 text-gray-400" />
+          )}
         </button>
       </div>
     </header>

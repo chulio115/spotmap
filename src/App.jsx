@@ -6,13 +6,13 @@ import Header from './components/Header'
 import MapPage from './pages/MapPage'
 import FeedPage from './pages/FeedPage'
 import LoginPage from './pages/LoginPage'
-import AdminPage from './pages/AdminPage'
+import SettingsPage from './pages/SettingsPage'
 import SpotForm from './components/SpotForm'
 import SpotDetail from './components/SpotDetail'
 import './index.css'
 
 function AppContent() {
-  const { user, logout, isAdmin } = useAuth()
+  const { user, logout } = useAuth()
   const { spots, loading, createSpot, deleteSpot } = useSpots()
   const location = useLocation()
   const [activeView, setActiveView] = useState('map')
@@ -27,12 +27,7 @@ function AppContent() {
   }
 
   const handleMapClick = (latlng) => {
-    console.log('🗺️ Map clicked:', latlng)
-    if (!user) {
-      console.log('❌ No user, ignoring click')
-      return
-    }
-    console.log('✅ Opening SpotForm')
+    if (!user) return
     setFormPosition(latlng)
     setShowSpotForm(true)
   }
@@ -104,9 +99,16 @@ function AppContent() {
           }
         />
         <Route
-          path="/admin"
+          path="/settings"
           element={
-            user && isAdmin ? <AdminPage /> : <Navigate to="/login" replace />
+            user ? (
+              <SettingsPage
+                spots={spots}
+                onDeleteSpot={deleteSpot}
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
           }
         />
       </Routes>

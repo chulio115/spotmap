@@ -40,13 +40,9 @@ const MAP_STYLES = [
 function MapClickHandler({ isPinMode, onMapClick, onPinDone }) {
   useMapEvents({
     click(e) {
-      console.log('🗺️ MapClickHandler: click event', { isPinMode, latlng: e.latlng })
       if (isPinMode) {
-        console.log('✅ Pin mode active, calling onMapClick')
         onMapClick(e.latlng)
         onPinDone()
-      } else {
-        console.log('❌ Pin mode not active, ignoring click')
       }
     }
   })
@@ -243,10 +239,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick }) {
 
         {/* FAB - Spot erstellen */}
         <button
-          onClick={() => {
-            console.log('🎯 FAB clicked, toggling isPinMode from', isPinMode, 'to', !isPinMode)
-            setIsPinMode(!isPinMode)
-          }}
+          onClick={() => setIsPinMode(!isPinMode)}
           className={`pointer-events-auto w-14 h-14 rounded-full shadow-xl transition-all flex items-center justify-center ${
             isPinMode
               ? 'bg-red-500 hover:bg-red-600 scale-110 shadow-red-500/30'

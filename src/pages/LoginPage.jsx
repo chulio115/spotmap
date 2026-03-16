@@ -32,7 +32,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center">
           <div className="mx-auto h-20 w-20 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-3xl flex items-center justify-center mb-5 shadow-xl shadow-violet-500/20 rotate-3">
-            <span className="text-3xl -rotate-3">🗺️</span>
+            <span className="text-3xl -rotate-3">�</span>
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight">SpotMap</h1>
           <p className="text-gray-400 mt-2 text-sm leading-relaxed">
