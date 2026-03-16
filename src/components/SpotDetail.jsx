@@ -12,24 +12,35 @@ import {
 
 function compressImage(file, maxWidth = 1200, quality = 0.8) {
   return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = new window.Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        let { width, height } = img
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width
-          width = maxWidth
+    const timeout = setTimeout(() => resolve(file), 15000)
+    try {
+      const reader = new FileReader()
+      reader.onerror = () => { clearTimeout(timeout); resolve(file) }
+      reader.onload = (e) => {
+        const img = new window.Image()
+        img.onerror = () => { clearTimeout(timeout); resolve(file) }
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas')
+            let { width, height } = img
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width
+              width = maxWidth
+            }
+            canvas.width = width
+            canvas.height = height
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+            canvas.toBlob(
+              (blob) => { clearTimeout(timeout); resolve(blob || file) },
+              'image/jpeg',
+              quality
+            )
+          } catch { clearTimeout(timeout); resolve(file) }
         }
-        canvas.width = width
-        canvas.height = height
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height)
-        canvas.toBlob(resolve, 'image/jpeg', quality)
+        img.src = e.target.result
       }
-      img.src = e.target.result
-    }
-    reader.readAsDataURL(file)
+      reader.readAsDataURL(file)
+    } catch { clearTimeout(timeout); resolve(file) }
   })
 }
 

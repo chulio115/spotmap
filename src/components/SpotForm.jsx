@@ -7,25 +7,45 @@ import { CATEGORIES } from '../constants/categories'
 
 function compressImage(file, maxWidth = 1200, quality = 0.8) {
   return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = new window.Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        let { width, height } = img
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width
-          width = maxWidth
+    const timeout = setTimeout(() => resolve(file), 15000)
+    try {
+      const reader = new FileReader()
+      reader.onerror = () => { clearTimeout(timeout); resolve(file) }
+      reader.onload = (e) => {
+        const img = new window.Image()
+        img.onerror = () => { clearTimeout(timeout); resolve(file) }
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas')
+            let { width, height } = img
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width
+              width = maxWidth
+            }
+            canvas.width = width
+            canvas.height = height
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(img, 0, 0, width, height)
+            canvas.toBlob(
+              (blob) => {
+                clearTimeout(timeout)
+                resolve(blob || file)
+              },
+              'image/jpeg',
+              quality
+            )
+          } catch {
+            clearTimeout(timeout)
+            resolve(file)
+          }
         }
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
-        canvas.toBlob(resolve, 'image/jpeg', quality)
+        img.src = e.target.result
       }
-      img.src = e.target.result
+      reader.readAsDataURL(file)
+    } catch {
+      clearTimeout(timeout)
+      resolve(file)
     }
-    reader.readAsDataURL(file)
   })
 }
 
@@ -77,21 +97,25 @@ export default function SpotForm({ position, onClose, onSubmit }) {
     return urls
   }
 
+  const [submitError, setSubmitError] = useState('')
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.title.trim()) return
     if (!formData.category) return
 
     setIsSubmitting(true)
+    setSubmitError('')
     try {
-      const spotId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const tempId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
       let photoUrls = []
       if (photos.length > 0) {
-        photoUrls = await uploadPhotos(spotId)
+        photoUrls = await uploadPhotos(tempId)
       }
       await onSubmit({ ...formData, photos: photoUrls })
     } catch (error) {
       console.error('Fehler beim Erstellen des Spots:', error)
+      setSubmitError(error.message || 'Spot konnte nicht erstellt werden')
     } finally {
       setIsSubmitting(false)
     }
@@ -291,20 +315,25 @@ export default function SpotForm({ position, onClose, onSubmit }) {
                 Weiter
               </button>
             ) : (
-              <button
-                type="submit"
-                disabled={isSubmitting || !formData.title.trim()}
-                className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-2xl hover:from-violet-500 hover:to-fuchsia-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg shadow-violet-500/20 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {photos.length > 0 ? 'Fotos werden hochgeladen...' : 'Wird erstellt...'}
-                  </>
-                ) : (
-                  'Spot erstellen'
+              <>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !formData.title.trim()}
+                  className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-2xl hover:from-violet-500 hover:to-fuchsia-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg shadow-violet-500/20 flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {photos.length > 0 ? 'Fotos werden hochgeladen...' : 'Wird erstellt...'}
+                    </>
+                  ) : (
+                    'Spot erstellen'
+                  )}
+                </button>
+                {submitError && (
+                  <p className="text-red-400 text-xs text-center mt-2">{submitError}</p>
                 )}
-              </button>
+              </>
             )}
           </div>
         </form>
