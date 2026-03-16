@@ -52,36 +52,48 @@ export default function FeedPage({ spots = [], loading, onSpotClick }) {
             {spots.map(spot => {
               const category = getCategoryById(spot.category)
               if (!category) return null
+              const photos = spot.photos || []
               return (
                 <button
                   key={spot.id}
                   onClick={() => onSpotClick(spot)}
-                  className="w-full text-left bg-white/[0.03] backdrop-blur-sm rounded-2xl p-4 hover:bg-white/[0.06] transition-all border border-white/[0.04] active:scale-[0.98] group"
+                  className="w-full text-left bg-white/[0.03] backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-white/[0.06] transition-all border border-white/[0.04] active:scale-[0.98] group"
                 >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-lg transition-transform group-hover:scale-110"
-                      style={{ backgroundColor: category.color + '18' }}
-                    >
-                      {category.emoji}
+                  {/* Photo Preview */}
+                  {photos.length > 0 && (
+                    <div className="w-full aspect-[2.5/1] overflow-hidden">
+                      <img src={photos[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-white font-medium truncate text-[15px]">{spot.title}</h3>
-                        <span className="text-[11px] text-gray-600 flex-shrink-0">{formatDate(spot.createdAt)}</span>
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-lg transition-transform group-hover:scale-110"
+                        style={{ backgroundColor: category.color + '18' }}
+                      >
+                        {category.emoji}
                       </div>
-                      {spot.description && (
-                        <p className="text-gray-500 text-sm mt-0.5 line-clamp-2 leading-relaxed">{spot.description}</p>
-                      )}
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <span
-                          className="text-[11px] font-medium px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: category.color + '15', color: category.color }}
-                        >
-                          {category.label.split('/')[0].split('Geheimtipp')[0].trim()}
-                        </span>
-                        <span className="text-[11px] text-gray-600">{spot.createdByEmail?.split('@')[0] || ''}</span>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-white font-medium truncate text-[15px]">{spot.title}</h3>
+                          <span className="text-[11px] text-gray-600 flex-shrink-0">{formatDate(spot.createdAt)}</span>
+                        </div>
+                        {spot.description && (
+                          <p className="text-gray-500 text-sm mt-0.5 line-clamp-2 leading-relaxed">{spot.description}</p>
+                        )}
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <span
+                            className="text-[11px] font-medium px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: category.color + '15', color: category.color }}
+                          >
+                            {category.label}
+                          </span>
+                          <span className="text-[11px] text-gray-600">{spot.createdByName || spot.createdByEmail?.split('@')[0] || ''}</span>
+                          {photos.length > 0 && (
+                            <span className="text-[11px] text-gray-600">📷 {photos.length}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -40,8 +40,10 @@ export function useSpots() {
         category: spotData.category,
         lat: spotData.lat,
         lng: spotData.lng,
+        photos: spotData.photos || [],
         createdBy: user.uid,
         createdByEmail: user.email,
+        createdByName: user.displayName || '',
         createdAt: serverTimestamp()
       })
       
@@ -52,8 +54,10 @@ export function useSpots() {
         category: spotData.category,
         lat: spotData.lat,
         lng: spotData.lng,
+        photos: spotData.photos || [],
         createdBy: user.uid,
         createdByEmail: user.email,
+        createdByName: user.displayName || '',
         createdAt: new Date()
       }
       
