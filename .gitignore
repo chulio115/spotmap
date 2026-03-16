@@ -28,3 +28,6 @@ pb_data
 pb_migrations
 pocketbase
 pocketbase.zip
+
+# Sensitive setup files with API keys
+NETLIFY_SETUP.md
