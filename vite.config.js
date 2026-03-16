@@ -12,21 +12,21 @@ export default defineConfig({
       manifest: {
         name: 'SpotMap',
         short_name: 'SpotMap',
-        description: 'Private interactive map for sharing spots with friends',
-        theme_color: '#1a1a2e',
-        background_color: '#1a1a2e',
+        description: 'Geheime Spots teilen – nur für deinen Circle',
+        theme_color: '#030712',
+        background_color: '#030712',
         display: 'standalone',
         start_url: '/',
         icons: [
           {
-            src: 'icons/icon-192x192.png',
+            src: 'icons/icon-192x192.svg',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/svg+xml'
           },
           {
-            src: 'icons/icon-512x512.png',
+            src: 'icons/icon-192x192.svg',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/svg+xml'
           }
         ]
       }

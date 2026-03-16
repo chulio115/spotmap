@@ -1,80 +1,102 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { LogOut, Shield } from 'lucide-react'
 
 export default function Header({ onViewChange, currentUser, onLogout }) {
   const navigate = useNavigate()
   const location = useLocation()
   const isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL
+  const [showMenu, setShowMenu] = useState(false)
 
   const handleNavClick = (view) => {
     onViewChange(view)
     navigate(`/${view}`)
   }
 
+  const initial = currentUser?.displayName?.[0] || currentUser?.email?.[0] || '?'
+  const photoURL = currentUser?.photoURL
+
   return (
-    <header className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-b border-gray-800/50 z-50">
+    <header className="fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-xl border-b border-white/[0.04] z-50">
       <div className="flex items-center justify-between h-14 px-3 sm:px-4">
         {/* Logo */}
         <button 
           onClick={() => handleNavClick('map')}
-          className="text-base sm:text-lg font-bold text-white hover:text-gray-300 transition-colors flex-shrink-0"
+          className="text-base font-bold text-white hover:text-gray-300 transition-colors flex-shrink-0 flex items-center gap-1.5"
         >
-          🗺️ SpotMap
+          <span className="text-lg">🗺️</span>
+          <span className="hidden sm:inline">SpotMap</span>
         </button>
 
-        {/* Navigation */}
-        <nav className="flex gap-1">
+        {/* Navigation - Pill Style */}
+        <nav className="flex bg-white/[0.04] rounded-xl p-0.5">
           <button
             onClick={() => handleNavClick('map')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              location.pathname === '/map'
-                ? 'bg-white/10 text-white'
-                : 'text-gray-400 hover:text-white'
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              location.pathname === '/map' || location.pathname === '/'
+                ? 'bg-white/[0.08] text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             Karte
           </button>
           <button
             onClick={() => handleNavClick('feed')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
               location.pathname === '/feed'
-                ? 'bg-white/10 text-white'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-white/[0.08] text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             Feed
           </button>
         </nav>
 
-        {/* Right side */}
-        <div className="flex items-center gap-1">
-          {/* Admin Panel Button */}
-          {isAdmin && (
-            <button 
-              onClick={() => navigate('/admin')}
-              className={`p-2 rounded-lg transition-colors ${
-                location.pathname === '/admin'
-                  ? 'text-cyan-400 bg-cyan-500/10'
-                  : 'text-gray-500 hover:text-white'
-              }`}
-              title="Admin Panel"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          )}
-
-          {/* Logout Button */}
+        {/* User Avatar / Menu */}
+        <div className="relative">
           <button 
-            onClick={onLogout}
-            className="p-2 text-gray-500 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-colors"
-            title="Logout"
+            onClick={() => setShowMenu(!showMenu)}
+            className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center ring-2 ring-white/[0.06] hover:ring-violet-500/30 transition-all"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            {photoURL ? (
+              <img src={photoURL} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-xs font-bold uppercase">
+                {initial}
+              </div>
+            )}
           </button>
+
+          {showMenu && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+              <div className="absolute right-0 mt-2 z-50 bg-gray-900/95 backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-2xl overflow-hidden min-w-[200px]">
+                {/* User Info */}
+                <div className="px-4 py-3 border-b border-white/[0.04]">
+                  <p className="text-sm font-medium text-white truncate">{currentUser?.displayName || 'User'}</p>
+                  <p className="text-xs text-gray-500 truncate">{currentUser?.email}</p>
+                </div>
+
+                {isAdmin && (
+                  <button
+                    onClick={() => { navigate('/admin'); setShowMenu(false) }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:bg-white/[0.04] transition-colors flex items-center gap-2.5"
+                  >
+                    <Shield className="w-4 h-4 text-violet-400" />
+                    Admin Panel
+                  </button>
+                )}
+
+                <button
+                  onClick={() => { onLogout(); setShowMenu(false) }}
+                  className="w-full px-4 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/[0.06] transition-colors flex items-center gap-2.5"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Abmelden
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </header>
