@@ -97,6 +97,8 @@ export function AuthProvider({ children }) {
         throw new Error('Email Link Login ist nicht aktiviert. Bitte aktiviere es in der Firebase Console.')
       } else if (error.code === 'auth/invalid-email') {
         throw new Error('Ungültige E-Mail-Adresse.')
+      } else if (error.code === 'auth/too-many-requests') {
+        throw new Error('Zu viele Anfragen. Bitte warte 5-10 Minuten und versuch es erneut. Oder nutze Google Login für sofortigen Zugang.')
       } else {
         throw new Error('Fehler beim Senden des Login-Links: ' + error.message)
       }
