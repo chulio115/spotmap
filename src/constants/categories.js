@@ -8,6 +8,7 @@ export const CATEGORIES = [
   { id: 'bar',         label: 'Bar / Nachtleben',         emoji: '🍺', color: '#3B82F6' },
   { id: 'art',         label: 'Kunst / Graffiti',         emoji: '🎨', color: '#EC4899' },
   { id: 'skate',       label: 'Skate / Sport',            emoji: '🛹', color: '#14B8A6' },
+  { id: 'fishing',     label: 'Angel Location',           emoji: '🎣', color: '#0891B2' },
   { id: 'secret_sex',  label: 'Spicy Spots',               emoji: '🔞', color: '#DC2626' },
   { id: 'misc',        label: 'Sonstiges',                emoji: '📍', color: '#64748B' },
 ];
