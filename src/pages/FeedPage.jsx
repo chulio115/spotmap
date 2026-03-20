@@ -55,7 +55,7 @@ export default function FeedPage({ spots = [], loading, onSpotClick, onSpotNavig
   }
 
   return (
-    <div className="pb-6 min-h-screen bg-gradient-to-b from-gray-950 to-gray-900" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 overflow-y-auto" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top, 0px))', paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}>
       <div className="max-w-lg mx-auto px-4">
         {/* Header */}
         <div className="pt-5 pb-3">

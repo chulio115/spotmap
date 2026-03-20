@@ -179,8 +179,8 @@ export default function SettingsPage({ spots = [], onDeleteSpot, onSpotNavigate 
   ]
 
   return (
-    <div className="min-h-screen bg-gray-950" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}>
-      <div className="max-w-lg mx-auto px-4 pb-8">
+    <div className="min-h-screen bg-gray-950 overflow-y-auto" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top, 0px))', paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="max-w-lg mx-auto px-4">
         {/* Back + Title */}
         <div className="flex items-center gap-3 pt-5 pb-4">
           <button onClick={() => navigate('/map')} className="p-1.5 text-gray-400 hover:text-white transition-colors">
