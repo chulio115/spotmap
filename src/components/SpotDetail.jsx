@@ -440,19 +440,6 @@ export default function SpotDetail({
             </button>
             <input ref={photoInputRef} type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
 
-            {/* Location */}
-            <button onClick={() => window.open(`https://www.google.com/maps?q=${spot.lat},${spot.lng}`, '_blank')}
-              className="w-full flex items-center gap-3 p-3.5 bg-white/[0.02] rounded-2xl border border-white/[0.04] hover:bg-white/[0.04] transition-all text-left">
-              <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-white font-medium">In Google Maps öffnen</p>
-                <p className="text-xs text-gray-600 mt-0.5">{spot.lat?.toFixed(5)}, {spot.lng?.toFixed(5)}</p>
-              </div>
-              <ExternalLink className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            </button>
-
             {/* Comments Section */}
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -520,6 +507,19 @@ export default function SpotDetail({
                 </div>
               )}
             </div>
+
+            {/* Location */}
+            <button onClick={() => window.open(`https://www.google.com/maps?q=${spot.lat},${spot.lng}`, '_blank')}
+              className="w-full flex items-center gap-3 p-3.5 bg-white/[0.02] rounded-2xl border border-white/[0.04] hover:bg-white/[0.04] transition-all text-left active:scale-[0.98]">
+              <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-5 h-5 text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white font-medium">In Google Maps öffnen</p>
+                <p className="text-xs text-gray-600 mt-0.5">{spot.lat?.toFixed(5)}, {spot.lng?.toFixed(5)}</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-gray-600 flex-shrink-0" />
+            </button>
 
             {/* Bottom Actions */}
             <div className="flex gap-2 pt-2 border-t border-white/[0.04]" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}>
