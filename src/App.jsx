@@ -6,11 +6,13 @@ import { useSpots } from './hooks/useSpots'
 import Header from './components/Header'
 import MapPage from './pages/MapPage'
 import FeedPage from './pages/FeedPage'
+import LeaderboardPage from './pages/LeaderboardPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import SettingsPage from './pages/SettingsPage'
 import SpotForm from './components/SpotForm'
 import SpotDetail from './components/SpotDetail'
+import { useNotifications } from './hooks/useNotifications'
 import './index.css'
 
 function AppContent() {
@@ -24,6 +26,7 @@ function AppContent() {
   const [navigateToSpot, setNavigateToSpot] = useState(null)
 
   const isLoginPage = location.pathname === '/login'
+  const { notifications } = useNotifications(user?.uid, spots)
 
   const handleSpotClick = (spot) => {
     setSelectedSpot(spot)
@@ -65,10 +68,9 @@ function AppContent() {
         <Header
           activeView={activeView}
           onViewChange={setActiveView}
-          notificationCount={0}
           currentUser={user}
-          onLogout={logout}
-          onNotificationClick={() => {}}
+          notifications={notifications}
+          onSpotClick={handleSpotClick}
         />
       )}
 
@@ -105,6 +107,16 @@ function AppContent() {
                 onToggleReaction={toggleReaction}
                 currentUser={user}
               />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            user ? (
+              <LeaderboardPage spots={spots} />
             ) : (
               <Navigate to="/login" replace />
             )

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useCategoriesContext } from '../lib/CategoriesContext'
 import { useComments } from '../hooks/useComments'
@@ -72,6 +72,58 @@ export default function SpotDetail({
   // Photo upload state
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
   const photoInputRef = useRef(null)
+
+  // Swipe-to-close state
+  const [dragY, setDragY] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartY = useRef(0)
+  const sheetRef = useRef(null)
+
+  // Hardware back button support
+  useEffect(() => {
+    const handleBack = (e) => {
+      e.preventDefault()
+      onClose()
+    }
+    window.history.pushState({ spotDetail: true }, '')
+    window.addEventListener('popstate', handleBack)
+    return () => window.removeEventListener('popstate', handleBack)
+  }, [onClose])
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  const handleTouchStart = useCallback((e) => {
+    // Only start drag from the drag handle or top area
+    const target = e.target
+    const sheet = sheetRef.current
+    if (!sheet) return
+    const scrollableContent = sheet.querySelector('[data-scroll-content]')
+    if (scrollableContent && scrollableContent.scrollTop > 0) return
+    dragStartY.current = e.touches[0].clientY
+    setIsDragging(true)
+  }, [])
+
+  const handleTouchMove = useCallback((e) => {
+    if (!isDragging) return
+    const dy = e.touches[0].clientY - dragStartY.current
+    if (dy > 0) {
+      setDragY(dy)
+    }
+  }, [isDragging])
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isDragging) return
+    if (dragY > 120) {
+      onClose()
+    } else {
+      setDragY(0)
+    }
+    setIsDragging(false)
+  }, [isDragging, dragY, onClose])
 
   const isCreator = currentUser?.uid === spot.createdBy
   const isAdmin = currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL
@@ -165,15 +217,23 @@ export default function SpotDetail({
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-end justify-center md:items-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" style={{ opacity: Math.max(0, 1 - dragY / 300) }} />
       <div
-        className="relative w-full max-w-lg bg-gray-950 rounded-t-[24px] md:rounded-[24px] overflow-hidden border border-white/[0.06] shadow-2xl animate-slide-up"
-        style={{ maxHeight: 'min(88vh, 88dvh)' }}
+        ref={sheetRef}
+        className={`relative w-full max-w-lg bg-gray-950 rounded-t-[24px] md:rounded-[24px] overflow-hidden border border-white/[0.06] shadow-2xl ${dragY === 0 ? 'animate-slide-up' : ''}`}
+        style={{
+          maxHeight: 'min(92vh, 92dvh)',
+          transform: `translateY(${dragY}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
         onClick={e => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Drag Handle */}
-        <div className="flex justify-center pt-2.5 pb-0.5 md:hidden">
-          <div className="w-10 h-1 rounded-full bg-gray-700" />
+        <div className="flex justify-center pt-3 pb-1 md:hidden cursor-grab active:cursor-grabbing">
+          <div className="w-10 h-1.5 rounded-full bg-gray-600" />
         </div>
 
         {/* Photo Gallery */}
@@ -199,8 +259,8 @@ export default function SpotDetail({
                 </div>
               </>
             )}
-            <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 bg-black/40 rounded-full flex items-center justify-center text-white backdrop-blur-sm">
-              <X className="w-4 h-4" />
+            <button onClick={onClose} className="absolute top-3 right-3 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white backdrop-blur-sm active:scale-90 transition-transform">
+              <X className="w-5 h-5" />
             </button>
             <div className="absolute top-3 left-3 flex items-center gap-2">
               <span className="bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 text-[11px] text-white/80">
@@ -215,7 +275,7 @@ export default function SpotDetail({
           </div>
         )}
 
-        <div className="overflow-y-auto" style={{ maxHeight: photos.length > 0 ? 'calc(88vh - 35vh - 40px)' : 'calc(88vh - 40px)' }}>
+        <div className="overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch" data-scroll-content style={{ maxHeight: photos.length > 0 ? 'calc(92vh - 35vh - 44px)' : 'calc(92vh - 44px)' }}>
           {/* Title + Category */}
           <div className="px-5 pt-4 pb-2">
             {!isEditing ? (
@@ -235,8 +295,8 @@ export default function SpotDetail({
                     </button>
                   )}
                   {photos.length === 0 && (
-                    <button onClick={onClose} className="p-2 text-gray-600 hover:text-white transition-colors">
-                      <X className="w-4 h-4" />
+                    <button onClick={onClose} className="p-2.5 text-gray-500 hover:text-white transition-colors active:scale-90">
+                      <X className="w-5 h-5" />
                     </button>
                   )}
                 </div>
@@ -462,14 +522,14 @@ export default function SpotDetail({
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex gap-2 pt-2 border-t border-white/[0.04]">
+            <div className="flex gap-2 pt-2 border-t border-white/[0.04]" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}>
               <button onClick={handleShare}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-white/[0.04] text-white text-sm rounded-2xl hover:bg-white/[0.06] transition-colors font-medium border border-white/[0.04]">
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white/[0.04] text-white text-sm rounded-2xl hover:bg-white/[0.06] transition-colors font-medium border border-white/[0.04] active:scale-[0.97]">
                 <Share2 className="w-4 h-4" /> Teilen
               </button>
               {canDelete && (
                 <button onClick={() => onDelete(spot.id)}
-                  className="flex items-center justify-center gap-2 px-5 py-3 text-red-400 text-sm rounded-2xl hover:bg-red-500/10 transition-colors font-medium border border-red-500/15">
+                  className="flex items-center justify-center gap-2 px-5 py-3.5 text-red-400 text-sm rounded-2xl hover:bg-red-500/10 transition-colors font-medium border border-red-500/15 active:scale-[0.97]">
                   <Trash2 className="w-4 h-4" /> Löschen
                 </button>
               )}
