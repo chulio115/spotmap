@@ -4,11 +4,13 @@ import { updateProfile } from 'firebase/auth'
 import { db } from '../lib/firebase'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { getCategoryById } from '../constants/categories'
+import { useCategoriesContext } from '../lib/CategoriesContext'
 import { ArrowLeft, User, MapPin, Shield, Trash2, UserPlus, Mail, ChevronRight, Navigation } from 'lucide-react'
+import { sendInviteEmail } from '../services/emailService'
 
 export default function SettingsPage({ spots = [], onDeleteSpot, onSpotNavigate }) {
   const { user, isAdmin, logout } = useAuth()
+  const { categories, getCategoryById, addCategory, removeCategory } = useCategoriesContext()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('profile')
 
@@ -22,6 +24,13 @@ export default function SettingsPage({ spots = [], onDeleteSpot, onSpotNavigate 
   const [newEmail, setNewEmail] = useState('')
   const [isInviting, setIsInviting] = useState(false)
   const [adminMsg, setAdminMsg] = useState('')
+
+  // Category management state
+  const [showCatForm, setShowCatForm] = useState(false)
+  const [newCatLabel, setNewCatLabel] = useState('')
+  const [newCatEmoji, setNewCatEmoji] = useState('📍')
+  const [newCatColor, setNewCatColor] = useState('#8B5CF6')
+  const [catMsg, setCatMsg] = useState('')
 
   const mySpots = spots.filter(s => s.createdBy === user?.uid)
   const allSpots = spots
@@ -70,17 +79,27 @@ export default function SettingsPage({ spots = [], onDeleteSpot, onSpotNavigate 
     setIsInviting(true)
     setAdminMsg('')
     try {
+      // Save to Firestore
       await setDoc(doc(db, 'allowed_emails', email), {
         email,
         invitedBy: user.uid,
         createdAt: serverTimestamp()
       })
+      
+      // Send invite email via Resend
+      await sendInviteEmail(email)
+      
       setAllowedEmails(prev => [...prev, { email, invitedBy: user.uid, createdAt: new Date() }])
       setNewEmail('')
-      setAdminMsg('Eingeladen!')
-      setTimeout(() => setAdminMsg(''), 2000)
+      setAdminMsg('Eingeladen! E-Mail wurde gesendet.')
+      setTimeout(() => setAdminMsg(''), 3000)
     } catch (err) {
-      setAdminMsg('Fehler: ' + err.message)
+      console.error('Invite error:', err)
+      if (err.message.includes('Resend')) {
+        setAdminMsg('E-Mail Fehler: ' + err.message)
+      } else {
+        setAdminMsg('Fehler: ' + err.message)
+      }
     } finally {
       setIsInviting(false)
     }
@@ -102,6 +121,43 @@ export default function SettingsPage({ spots = [], onDeleteSpot, onSpotNavigate 
       await onDeleteSpot(spotId)
     } catch (err) {
       alert('Fehler: ' + err.message)
+    }
+  }
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault()
+    if (!newCatLabel.trim()) return
+    const id = newCatLabel.trim().toLowerCase().replace(/[^a-z0-9]/g, '_')
+    if (categories.find(c => c.id === id)) {
+      setCatMsg('Kategorie existiert bereits')
+      return
+    }
+    try {
+      await addCategory({ id, label: newCatLabel.trim(), emoji: newCatEmoji, color: newCatColor })
+      setNewCatLabel('')
+      setNewCatEmoji('📍')
+      setNewCatColor('#8B5CF6')
+      setShowCatForm(false)
+      setCatMsg('Kategorie hinzugefügt!')
+      setTimeout(() => setCatMsg(''), 2000)
+    } catch (err) {
+      setCatMsg('Fehler: ' + err.message)
+    }
+  }
+
+  const handleRemoveCategory = async (catId) => {
+    const spotsWithCat = allSpots.filter(s => s.category === catId)
+    if (spotsWithCat.length > 0) {
+      alert(`Kann nicht gelöscht werden: ${spotsWithCat.length} Spots nutzen diese Kategorie.`)
+      return
+    }
+    if (!window.confirm('Kategorie wirklich löschen?')) return
+    try {
+      await removeCategory(catId)
+      setCatMsg('Kategorie gelöscht')
+      setTimeout(() => setCatMsg(''), 2000)
+    } catch (err) {
+      setCatMsg('Fehler: ' + err.message)
     }
   }
 
@@ -300,6 +356,93 @@ export default function SettingsPage({ spots = [], onDeleteSpot, onSpotNavigate 
                 {allowedEmails.length === 0 && (
                   <p className="text-gray-600 text-sm text-center py-6">Keine Einladungen</p>
                 )}
+              </div>
+            </div>
+
+            {/* Category Management */}
+            <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/[0.04]">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                  <span className="text-lg">🏷️</span>
+                  Kategorien ({categories.length})
+                </h3>
+                <button
+                  onClick={() => setShowCatForm(!showCatForm)}
+                  className="text-xs text-violet-400 font-semibold"
+                >
+                  {showCatForm ? 'Abbrechen' : '+ Neue'}
+                </button>
+              </div>
+
+              {showCatForm && (
+                <form onSubmit={handleAddCategory} className="mb-4 space-y-3 p-3 bg-white/[0.02] rounded-xl border border-white/[0.04]">
+                  <input
+                    type="text"
+                    value={newCatLabel}
+                    onChange={e => setNewCatLabel(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500/40 text-sm"
+                    placeholder="Name der Kategorie"
+                    required
+                  />
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label className="text-[11px] text-gray-500 mb-1 block">Emoji</label>
+                      <input
+                        type="text"
+                        value={newCatEmoji}
+                        onChange={e => setNewCatEmoji(e.target.value)}
+                        className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-center text-lg focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                        maxLength={4}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-[11px] text-gray-500 mb-1 block">Farbe</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={newCatColor}
+                          onChange={e => setNewCatColor(e.target.value)}
+                          className="w-10 h-10 rounded-lg border-0 cursor-pointer bg-transparent"
+                        />
+                        <span className="text-xs text-gray-500">{newCatColor}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-xl hover:bg-violet-500 transition-all"
+                  >
+                    Kategorie hinzufügen
+                  </button>
+                </form>
+              )}
+
+              {catMsg && <p className="mb-2 text-sm text-emerald-400">{catMsg}</p>}
+
+              <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
+                {categories.map(cat => (
+                  <div key={cat.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
+                        style={{ backgroundColor: cat.color + '20' }}
+                      >
+                        {cat.emoji}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-white text-sm truncate">{cat.label}</p>
+                        <p className="text-gray-600 text-[11px]">{allSpots.filter(s => s.category === cat.id).length} Spots</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveCategory(cat.id)}
+                      className="p-1.5 text-gray-600 hover:text-red-400 transition-colors flex-shrink-0"
+                      title="Kategorie löschen"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

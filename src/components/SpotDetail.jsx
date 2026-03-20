@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { getCategoryById, CATEGORIES } from '../constants/categories'
+import { useCategoriesContext } from '../lib/CategoriesContext'
 import { useComments } from '../hooks/useComments'
 import {
   X, MapPin, ExternalLink, Share2, Trash2,
@@ -50,6 +50,7 @@ export default function SpotDetail({
   spot, currentUser, onClose, onDelete,
   onUpdateSpot, onAddVisitor, onRemoveVisitor, onAddPhotos
 }) {
+  const { categories, getCategoryById } = useCategoriesContext()
   const category = getCategoryById(spot.category)
   const [photoIndex, setPhotoIndex] = useState(0)
   const photos = spot.photos || []
@@ -242,7 +243,7 @@ export default function SpotDetail({
                   className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-2xl text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                   placeholder="Beschreibung..." />
                 <div className="flex flex-wrap gap-1.5">
-                  {CATEGORIES.map(c => (
+                  {categories.map(c => (
                     <button key={c.id} type="button" onClick={() => setEditCategory(c.id)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                         editCategory === c.id ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30' : 'bg-white/[0.03] text-gray-500 border border-white/[0.04]'

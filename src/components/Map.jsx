@@ -1,8 +1,8 @@
-import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, useMapEvents, CircleMarker, Circle } from 'react-leaflet'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { MapPin, Navigation, SlidersHorizontal, X, Layers, Plus } from 'lucide-react'
-import SpotMarker from './SpotMarker'
-import { CATEGORIES } from '../constants/categories'
+import MarkerClusterGroup from './MarkerClusterGroup'
+import { useCategoriesContext } from '../lib/CategoriesContext'
 
 const MAP_STYLES = [
   {
@@ -70,7 +70,7 @@ function MapRef({ mapRef }) {
   return null
 }
 
-function FlyToUserLocation() {
+function FlyToUserLocation({ onLocationFound }) {
   const map = useMap()
   const hasFlown = useRef(false)
 
@@ -81,28 +81,70 @@ function FlyToUserLocation() {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          map.flyTo([pos.coords.latitude, pos.coords.longitude], 14, { duration: 1.2 })
+          const coords = [pos.coords.latitude, pos.coords.longitude]
+          map.flyTo(coords, 14, { duration: 1.2 })
+          onLocationFound?.(coords)
         },
         () => {},
         { enableHighAccuracy: true, timeout: 8000 }
       )
     }
-  }, [map])
+  }, [map]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null
 }
 
-export default function Map({ spots = [], onSpotClick, onMapClick, navigateToSpot, onNavigateDone }) {
-  const [selectedCategories, setSelectedCategories] = useState(
-    CATEGORIES.map(cat => cat.id)
+function UserLocationDot({ position }) {
+  if (!position) return null
+  return (
+    <>
+      <Circle
+        center={position}
+        radius={40}
+        pathOptions={{ color: 'transparent', fillColor: '#3B82F6', fillOpacity: 0.12 }}
+      />
+      <CircleMarker
+        center={position}
+        radius={7}
+        pathOptions={{
+          color: '#ffffff',
+          fillColor: '#3B82F6',
+          fillOpacity: 1,
+          weight: 3,
+        }}
+      />
+    </>
   )
+}
+
+function ZoomTracker({ onZoomChange }) {
+  useMapEvents({
+    zoomend(e) {
+      onZoomChange(e.target.getZoom())
+    }
+  })
+  return null
+}
+
+export default function Map({ spots = [], onSpotClick, onMapClick, navigateToSpot, onNavigateDone }) {
+  const { categories } = useCategoriesContext()
+  const [selectedCategories, setSelectedCategories] = useState([])
   const [activeSpotId, setActiveSpotId] = useState(null)
   const [isPinMode, setIsPinMode] = useState(false)
+
+  // Init filter with all categories when they load
+  useEffect(() => {
+    if (categories.length > 0 && selectedCategories.length === 0) {
+      setSelectedCategories(categories.map(cat => cat.id))
+    }
+  }, [categories]) // eslint-disable-line react-hooks/exhaustive-deps
   const [showFilter, setShowFilter] = useState(false)
   const [showStyles, setShowStyles] = useState(false)
   const [mapStyle, setMapStyle] = useState(MAP_STYLES[0])
   const mapRef = useRef(null)
   const [isLocating, setIsLocating] = useState(false)
+  const [userLocation, setUserLocation] = useState(null)
+  const [zoomLevel, setZoomLevel] = useState(13)
 
   useEffect(() => {
     if (!navigateToSpot) return
@@ -122,7 +164,9 @@ export default function Map({ spots = [], onSpotClick, onMapClick, navigateToSpo
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          mapRef.current?.flyTo([position.coords.latitude, position.coords.longitude], 15, { duration: 1.5 })
+          const coords = [position.coords.latitude, position.coords.longitude]
+          setUserLocation(coords)
+          mapRef.current?.flyTo(coords, 15, { duration: 1.5 })
           setIsLocating(false)
         },
         () => {
@@ -139,14 +183,14 @@ export default function Map({ spots = [], onSpotClick, onMapClick, navigateToSpo
 
   const isDark = mapStyle.id === 'dark'
 
-  const activeFilterCount = selectedCategories.length === CATEGORIES.length
+  const activeFilterCount = selectedCategories.length === categories.length
     ? 0
-    : CATEGORIES.length - selectedCategories.length
+    : categories.length - selectedCategories.length
 
   const handleCategoryToggle = (categoryId) => {
     if (categoryId === 'all') {
       setSelectedCategories(
-        selectedCategories.length === CATEGORIES.length ? [] : CATEGORIES.map(cat => cat.id)
+        selectedCategories.length === categories.length ? [] : categories.map(cat => cat.id)
       )
     } else {
       setSelectedCategories(prev =>
@@ -201,16 +245,16 @@ export default function Map({ spots = [], onSpotClick, onMapClick, navigateToSpo
           onPinDone={() => setIsPinMode(false)}
         />
         <MapRef mapRef={mapRef} />
-        <FlyToUserLocation />
+        <FlyToUserLocation onLocationFound={setUserLocation} />
+        <ZoomTracker onZoomChange={setZoomLevel} />
+        <UserLocationDot position={userLocation} />
 
-        {filteredSpots.map(spot => (
-          <SpotMarker
-            key={spot.id}
-            spot={spot}
-            onClick={handleSpotClick}
-            isActive={spot.id === activeSpotId}
-          />
-        ))}
+        <MarkerClusterGroup
+          spots={filteredSpots}
+          onSpotClick={handleSpotClick}
+          activeSpotId={activeSpotId}
+          zoomLevel={zoomLevel}
+        />
       </MapContainer>
 
       {/* Top-Right Controls: Map Style Switcher */}
@@ -310,7 +354,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick, navigateToSpo
                   onClick={() => handleCategoryToggle('all')}
                   className="text-xs text-violet-500 font-semibold"
                 >
-                  {selectedCategories.length === CATEGORIES.length ? 'Keine' : 'Alle'}
+                  {selectedCategories.length === categories.length ? 'Keine' : 'Alle'}
                 </button>
                 <button onClick={() => setShowFilter(false)} className="text-gray-400 hover:text-gray-600">
                   <X className="w-5 h-5" />
@@ -318,7 +362,7 @@ export default function Map({ spots = [], onSpotClick, onMapClick, navigateToSpo
               </div>
             </div>
             <div className="px-4 pb-6 grid grid-cols-2 gap-2">
-              {CATEGORIES.map(category => {
+              {categories.map(category => {
                 const isActive = selectedCategories.includes(category.id)
                 return (
                   <button

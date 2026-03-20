@@ -1,7 +1,8 @@
-import { getCategoryById } from '../constants/categories'
+import { useCategoriesContext } from '../lib/CategoriesContext'
 import { MapPin } from 'lucide-react'
 
 export default function FeedPage({ spots = [], loading, onSpotClick }) {
+  const { getCategoryById } = useCategoriesContext()
   const formatDate = (timestamp) => {
     if (!timestamp) return ''
     const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp)

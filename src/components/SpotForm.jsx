@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { X, MapPin, Camera, Image as ImageIcon, Loader2 } from 'lucide-react'
-import { CATEGORIES } from '../constants/categories'
+import { useCategoriesContext } from '../lib/CategoriesContext'
 
 function compressImageToBase64(file, maxWidth = 800, quality = 0.6) {
   return new Promise((resolve) => {
@@ -49,6 +49,7 @@ function compressImageToBase64(file, maxWidth = 800, quality = 0.6) {
 }
 
 export default function SpotForm({ position, onClose, onSubmit }) {
+  const { categories } = useCategoriesContext()
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -109,7 +110,7 @@ export default function SpotForm({ position, onClose, onSubmit }) {
     }
   }
 
-  const selectedCategory = CATEGORIES.find(c => c.id === formData.category)
+  const selectedCategory = categories.find(c => c.id === formData.category)
   const canProceed = step === 1 ? formData.category !== '' : formData.title.trim() !== ''
 
   return createPortal(
@@ -161,7 +162,7 @@ export default function SpotForm({ position, onClose, onSubmit }) {
             <div className="px-5 pb-6 space-y-4">
               <p className="text-sm text-gray-400">Was für ein Spot ist das?</p>
               <div className="grid grid-cols-2 gap-2.5">
-                {CATEGORIES.map(category => {
+                {categories.map(category => {
                   const isActive = formData.category === category.id
                   return (
                     <button

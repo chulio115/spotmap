@@ -1,10 +1,11 @@
-import { CATEGORIES } from '../constants/categories'
+import { useCategoriesContext } from '../lib/CategoriesContext'
 
 export default function CategoryFilter({ selectedCategories, onCategoryToggle }) {
+  const { categories } = useCategoriesContext()
   return (
     <div className="fixed top-20 left-4 right-4 z-40 bg-gray-800 rounded-lg p-3 shadow-lg">
       <div className="flex flex-wrap gap-2">
-        {CATEGORIES.map(category => (
+        {categories.map(category => (
           <button
             key={category.id}
             onClick={() => onCategoryToggle(category.id)}

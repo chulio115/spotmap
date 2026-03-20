@@ -33,5 +33,11 @@ service cloud.firestore {
       allow read: if isLoggedIn();
       allow write: if isAdmin();
     }
+
+    // Kategorien: Alle eingeloggten User dürfen lesen, nur Admin darf schreiben
+    match /categories/{categoryId} {
+      allow read: if isLoggedIn();
+      allow write: if isAdmin();
+    }
   }
 }

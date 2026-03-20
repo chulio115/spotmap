@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import { 
   onAuthStateChanged, 
   signOut, 
+  signInWithEmailAndPassword,
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
@@ -134,6 +135,40 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const signInWithEmail = async (email, password) => {
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password)
+      
+      // Check if email is in allowlist
+      const allowedEmailDoc = await getDoc(doc(db, 'allowed_emails', email.toLowerCase()))
+      
+      if (!allowedEmailDoc.exists()) {
+        // Sign out if not allowed
+        await signOut(auth)
+        throw new Error('Du wurdest noch nicht eingeladen. Kontaktiere den Admin.')
+      }
+      
+      return { success: true, user: result.user }
+    } catch (error) {
+      console.error('Error signing in with email:', error)
+      
+      // Bessere Fehlermeldungen
+      if (error.code === 'auth/user-not-found') {
+        throw new Error('E-Mail nicht gefunden. Bitte registriere dich zuerst.')
+      } else if (error.code === 'auth/wrong-password') {
+        throw new Error('Falsches Passwort.')
+      } else if (error.code === 'auth/invalid-email') {
+        throw new Error('Ungültige E-Mail-Adresse.')
+      } else if (error.code === 'auth/too-many-requests') {
+        throw new Error('Zu viele Anfragen. Bitte warte 5-10 Minuten.')
+      } else if (error.message.includes('nicht eingeladen')) {
+        throw error
+      } else {
+        throw new Error('Login fehlgeschlagen: ' + error.message)
+      }
+    }
+  }
+
   const logout = async () => {
     try {
       await signOut(auth)
@@ -149,6 +184,7 @@ export function AuthProvider({ children }) {
     isAdmin,
     sendMagicLink,
     signInWithGoogle,
+    signInWithEmail,
     logout,
   }
 

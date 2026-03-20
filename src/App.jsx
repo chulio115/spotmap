@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/AuthContext'
+import { CategoriesProvider } from './lib/CategoriesContext'
 import { useSpots } from './hooks/useSpots'
 import Header from './components/Header'
 import MapPage from './pages/MapPage'
 import FeedPage from './pages/FeedPage'
 import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import SettingsPage from './pages/SettingsPage'
 import SpotForm from './components/SpotForm'
 import SpotDetail from './components/SpotDetail'
@@ -71,6 +73,7 @@ function AppContent() {
       )}
 
       <Routes>
+        <Route path="/register" element={user ? <Navigate to="/map" replace /> : <RegisterPage />} />
         <Route path="/login" element={user ? <Navigate to="/map" replace /> : <LoginPage />} />
         <Route path="/" element={<Navigate to="/map" replace />} />
         <Route
@@ -149,7 +152,9 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <CategoriesProvider>
+        <AppContent />
+      </CategoriesProvider>
     </Router>
   )
 }
