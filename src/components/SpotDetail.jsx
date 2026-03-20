@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useCategoriesContext } from '../lib/CategoriesContext'
 import { useComments } from '../hooks/useComments'
+import { REACTIONS } from '../constants/gamification'
 import {
   X, MapPin, ExternalLink, Share2, Trash2,
   ChevronLeft, ChevronRight, Camera,
@@ -48,7 +49,7 @@ function compressImageToBase64(file, maxWidth = 800, quality = 0.6) {
 
 export default function SpotDetail({
   spot, currentUser, onClose, onDelete,
-  onUpdateSpot, onAddVisitor, onRemoveVisitor, onAddPhotos
+  onUpdateSpot, onAddVisitor, onRemoveVisitor, onToggleReaction, onAddPhotos
 }) {
   const { categories, getCategoryById } = useCategoriesContext()
   const category = getCategoryById(spot.category)
@@ -150,7 +151,7 @@ export default function SpotDetail({
         if (dataUrl) dataUrls.push(dataUrl)
       }
       if (dataUrls.length > 0) {
-        await onAddPhotos(spot.id, dataUrls)
+        await onAddPhotos(spot.id, dataUrls, currentUser)
       }
     } catch (err) {
       alert('Fehler beim Upload: ' + err.message)
@@ -201,8 +202,15 @@ export default function SpotDetail({
             <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 bg-black/40 rounded-full flex items-center justify-center text-white backdrop-blur-sm">
               <X className="w-4 h-4" />
             </button>
-            <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 text-[11px] text-white/80">
-              {photoIndex + 1}/{photos.length}
+            <div className="absolute top-3 left-3 flex items-center gap-2">
+              <span className="bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 text-[11px] text-white/80">
+                {photoIndex + 1}/{photos.length}
+              </span>
+              {(spot.photoMeta?.[photoIndex]) && (
+                <span className="bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 text-[11px] text-white/80">
+                  📷 {spot.photoMeta[photoIndex].uploadedByName}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -267,6 +275,36 @@ export default function SpotDetail({
             {/* Description */}
             {!isEditing && spot.description && (
               <p className="text-gray-300 text-[15px] leading-relaxed">{spot.description}</p>
+            )}
+
+            {/* Emoji Reactions */}
+            {!isEditing && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {REACTIONS.map(emoji => {
+                  const reactions = spot.reactions || {}
+                  const users = reactions[emoji] || []
+                  const hasReacted = users.includes(currentUser?.uid)
+                  const count = users.length
+                  return (
+                    <button
+                      key={emoji}
+                      onClick={() => onToggleReaction?.(spot.id, emoji, currentUser?.uid)}
+                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm transition-all active:scale-90 ${
+                        hasReacted
+                          ? 'bg-violet-500/15 border border-violet-500/25'
+                          : 'bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      <span className="text-base">{emoji}</span>
+                      {count > 0 && (
+                        <span className={`text-xs font-medium ${hasReacted ? 'text-violet-300' : 'text-gray-500'}`}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
             )}
 
             {/* Creator Card */}

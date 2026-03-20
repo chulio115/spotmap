@@ -129,14 +129,47 @@ export function useSpots() {
     }
   }
 
-  const addPhotosToSpot = async (spotId, newPhotoUrls) => {
+  const toggleReaction = async (spotId, emoji, uid) => {
+    try {
+      const spot = spots.find(s => s.id === spotId)
+      const reactions = { ...(spot?.reactions || {}) }
+      const users = reactions[emoji] || []
+      
+      if (users.includes(uid)) {
+        reactions[emoji] = users.filter(u => u !== uid)
+        if (reactions[emoji].length === 0) delete reactions[emoji]
+      } else {
+        reactions[emoji] = [...users, uid]
+      }
+
+      const spotRef = doc(db, 'spots', spotId)
+      await updateDoc(spotRef, { reactions })
+      setSpots(prev => prev.map(s =>
+        s.id === spotId ? { ...s, reactions } : s
+      ))
+    } catch (err) {
+      console.error('Error toggling reaction:', err)
+      throw err
+    }
+  }
+
+  const addPhotosToSpot = async (spotId, newPhotoUrls, user) => {
     try {
       const spot = spots.find(s => s.id === spotId)
       const updatedPhotos = [...(spot?.photos || []), ...newPhotoUrls]
+      const existingMeta = spot?.photoMeta || []
+      const newMeta = newPhotoUrls.map(() => ({
+        uploadedBy: user?.uid || '',
+        uploadedByName: user?.displayName || user?.email?.split('@')[0] || '',
+        uploadedByPhoto: user?.photoURL || '',
+        uploadedAt: new Date().toISOString(),
+      }))
+      const updatedPhotoMeta = [...existingMeta, ...newMeta]
+
       const spotRef = doc(db, 'spots', spotId)
-      await updateDoc(spotRef, { photos: updatedPhotos })
+      await updateDoc(spotRef, { photos: updatedPhotos, photoMeta: updatedPhotoMeta })
       setSpots(prev => prev.map(s =>
-        s.id === spotId ? { ...s, photos: updatedPhotos } : s
+        s.id === spotId ? { ...s, photos: updatedPhotos, photoMeta: updatedPhotoMeta } : s
       ))
     } catch (err) {
       console.error('Error adding photos:', err)
@@ -164,6 +197,7 @@ export function useSpots() {
     deleteSpot,
     addVisitor,
     removeVisitor,
+    toggleReaction,
     addPhotosToSpot,
     refreshSpots: fetchSpots
   }

@@ -15,7 +15,7 @@ import './index.css'
 
 function AppContent() {
   const { user, logout } = useAuth()
-  const { spots, loading, createSpot, deleteSpot, updateSpot, addVisitor, removeVisitor, addPhotosToSpot } = useSpots()
+  const { spots, loading, createSpot, deleteSpot, updateSpot, addVisitor, removeVisitor, toggleReaction, addPhotosToSpot } = useSpots()
   const location = useLocation()
   const [activeView, setActiveView] = useState('map')
   const [showSpotForm, setShowSpotForm] = useState(false)
@@ -101,6 +101,9 @@ function AppContent() {
                 spots={spots}
                 loading={loading}
                 onSpotClick={handleSpotClick}
+                onSpotNavigate={(spot) => setNavigateToSpot(spot)}
+                onToggleReaction={toggleReaction}
+                currentUser={user}
               />
             ) : (
               <Navigate to="/login" replace />
@@ -142,6 +145,7 @@ function AppContent() {
           onUpdateSpot={updateSpot}
           onAddVisitor={addVisitor}
           onRemoveVisitor={removeVisitor}
+          onToggleReaction={toggleReaction}
           onAddPhotos={addPhotosToSpot}
         />
       )}
