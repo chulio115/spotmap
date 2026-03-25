@@ -85,7 +85,7 @@ export default function Header({ onViewChange, currentUser, notifications = [], 
 
             {/* Notification Dropdown */}
             {showNotifs && (
-              <div className="absolute right-0 top-full mt-2 w-80 max-h-[70vh] bg-gray-900 border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] bg-gray-900 border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden">
                 <div className="px-4 py-3 border-b border-white/[0.06]">
                   <p className="text-white text-sm font-semibold">Aktivität</p>
                   <p className="text-gray-500 text-[11px]">{notifications.length} Benachrichtigungen</p>

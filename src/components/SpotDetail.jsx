@@ -79,26 +79,23 @@ export default function SpotDetail({
   const dragStartY = useRef(0)
   const sheetRef = useRef(null)
 
-  // Hardware back button support
+  // Hardware back button support — clean history on unmount
   useEffect(() => {
-    const handleBack = (e) => {
-      e.preventDefault()
+    const handleBack = () => {
       onClose()
     }
     window.history.pushState({ spotDetail: true }, '')
     window.addEventListener('popstate', handleBack)
-    return () => window.removeEventListener('popstate', handleBack)
+    return () => {
+      window.removeEventListener('popstate', handleBack)
+      // Clean up the history entry if we're closing via X button (not back)
+      if (window.history.state?.spotDetail) {
+        window.history.back()
+      }
+    }
   }, [onClose])
 
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
-
   const handleTouchStart = useCallback((e) => {
-    // Only start drag from the drag handle or top area
-    const target = e.target
     const sheet = sheetRef.current
     if (!sheet) return
     const scrollableContent = sheet.querySelector('[data-scroll-content]')
@@ -216,13 +213,17 @@ export default function SpotDetail({
   if (!category) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-end justify-center md:items-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" style={{ opacity: Math.max(0, 1 - dragY / 300) }} />
+    <div
+      className="fixed inset-x-0 bottom-0 z-[8500] flex items-end justify-center md:items-center"
+      style={{ top: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" style={{ opacity: Math.max(0, 1 - dragY / 300) }} />
       <div
         ref={sheetRef}
         className={`relative w-full max-w-lg bg-gray-950 rounded-t-[24px] md:rounded-[24px] overflow-hidden border border-white/[0.06] shadow-2xl ${dragY === 0 ? 'animate-slide-up' : ''}`}
         style={{
-          maxHeight: 'min(92vh, 92dvh)',
+          maxHeight: 'calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px))',
           transform: `translateY(${dragY}px)`,
           transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
@@ -275,7 +276,16 @@ export default function SpotDetail({
           </div>
         )}
 
-        <div className="overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch" data-scroll-content style={{ maxHeight: photos.length > 0 ? 'calc(92vh - 35vh - 44px)' : 'calc(92vh - 44px)' }}>
+        <div
+          className="overflow-y-auto overscroll-contain"
+          data-scroll-content
+          style={{
+            maxHeight: photos.length > 0
+              ? 'calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px) - 35vh - 44px)'
+              : 'calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px) - 44px)',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {/* Title + Category */}
           <div className="px-5 pt-4 pb-2">
             {!isEditing ? (

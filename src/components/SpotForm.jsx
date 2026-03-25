@@ -114,13 +114,18 @@ export default function SpotForm({ position, onClose, onSubmit }) {
   const canProceed = step === 1 ? formData.category !== '' : formData.title.trim() !== ''
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-end justify-center md:items-center" onClick={onClose}>
+    <div
+      className="fixed inset-x-0 bottom-0 z-[8500] flex items-end justify-center md:items-center"
+      style={{ top: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}
+      onClick={onClose}
+    >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
       {/* Sheet */}
       <div
-        className="relative w-full max-w-md bg-gray-950 rounded-t-[28px] md:rounded-[28px] max-h-[92vh] overflow-hidden border border-white/[0.06] shadow-2xl animate-slide-up"
+        className="relative w-full max-w-md bg-gray-950 rounded-t-[28px] md:rounded-[28px] overflow-hidden border border-white/[0.06] shadow-2xl animate-slide-up"
+        style={{ maxHeight: 'calc(100dvh - 3.5rem - env(safe-area-inset-top, 0px))' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Drag Handle */}
