@@ -177,6 +177,25 @@ export function useSpots() {
     }
   }
 
+  const deletePhotoFromSpot = async (spotId, photoIndex) => {
+    try {
+      const spot = spots.find(s => s.id === spotId)
+      if (!spot) throw new Error('Spot not found')
+
+      const updatedPhotos = (spot.photos || []).filter((_, i) => i !== photoIndex)
+      const updatedPhotoMeta = (spot.photoMeta || []).filter((_, i) => i !== photoIndex)
+
+      const spotRef = doc(db, 'spots', spotId)
+      await updateDoc(spotRef, { photos: updatedPhotos, photoMeta: updatedPhotoMeta })
+      setSpots(prev => prev.map(s =>
+        s.id === spotId ? { ...s, photos: updatedPhotos, photoMeta: updatedPhotoMeta } : s
+      ))
+    } catch (err) {
+      console.error('Error deleting photo:', err)
+      throw err
+    }
+  }
+
   const deleteSpot = async (spotId) => {
     try {
       await deleteDoc(doc(db, 'spots', spotId))
@@ -199,6 +218,7 @@ export function useSpots() {
     removeVisitor,
     toggleReaction,
     addPhotosToSpot,
+    deletePhotoFromSpot,
     refreshSpots: fetchSpots
   }
 }

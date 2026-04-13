@@ -49,7 +49,7 @@ function compressImageToBase64(file, maxWidth = 800, quality = 0.6) {
 
 export default function SpotDetail({
   spot, currentUser, onClose, onDelete,
-  onUpdateSpot, onAddVisitor, onRemoveVisitor, onToggleReaction, onAddPhotos
+  onUpdateSpot, onAddVisitor, onRemoveVisitor, onToggleReaction, onAddPhotos, onDeletePhoto
 }) {
   const { categories, getCategoryById } = useCategoriesContext()
   const category = getCategoryById(spot.category)
@@ -127,6 +127,10 @@ export default function SpotDetail({
   const canDelete = isCreator || isAdmin
   const canEdit = isCreator || isAdmin
   const hasVisited = visitors.some(v => v.uid === currentUser?.uid)
+
+  // Check if current user can delete the current photo
+  const currentPhotoMeta = spot.photoMeta?.[photoIndex]
+  const canDeleteCurrentPhoto = isAdmin || (currentPhotoMeta?.uploadedBy === currentUser?.uid)
 
   const formatDate = (timestamp) => {
     if (!timestamp) return ''
@@ -263,7 +267,7 @@ export default function SpotDetail({
             <button onClick={onClose} className="absolute top-3 right-3 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center text-white backdrop-blur-sm active:scale-90 transition-transform">
               <X className="w-5 h-5" />
             </button>
-            <div className="absolute top-3 left-3 flex items-center gap-2">
+            <div className="absolute top-3 left-3 flex items-center gap-2 flex-wrap">
               <span className="bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 text-[11px] text-white/80">
                 {photoIndex + 1}/{photos.length}
               </span>
@@ -271,6 +275,26 @@ export default function SpotDetail({
                 <span className="bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 text-[11px] text-white/80">
                   📷 {spot.photoMeta[photoIndex].uploadedByName}
                 </span>
+              )}
+              {canDeleteCurrentPhoto && photos.length > 0 && (
+                <button
+                  onClick={async () => {
+                    if (!window.confirm('Foto wirklich löschen?')) return
+                    try {
+                      await onDeletePhoto(spot.id, photoIndex)
+                      // Reset to first photo if we deleted the last one
+                      if (photoIndex >= photos.length - 1) {
+                        setPhotoIndex(Math.max(0, photos.length - 2))
+                      }
+                    } catch (err) {
+                      alert('Fehler beim Löschen: ' + err.message)
+                    }
+                  }}
+                  className="bg-red-500/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-red-500 active:scale-90 transition-all"
+                  title="Foto löschen"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-white" />
+                </button>
               )}
             </div>
           </div>

@@ -17,7 +17,7 @@ import './index.css'
 
 function AppContent() {
   const { user, logout } = useAuth()
-  const { spots, loading, createSpot, deleteSpot, updateSpot, addVisitor, removeVisitor, toggleReaction, addPhotosToSpot } = useSpots()
+  const { spots, loading, createSpot, deleteSpot, updateSpot, addVisitor, removeVisitor, toggleReaction, addPhotosToSpot, deletePhotoFromSpot } = useSpots()
   const location = useLocation()
   const [activeView, setActiveView] = useState('map')
   const [showSpotForm, setShowSpotForm] = useState(false)
@@ -159,6 +159,7 @@ function AppContent() {
           onRemoveVisitor={removeVisitor}
           onToggleReaction={toggleReaction}
           onAddPhotos={addPhotosToSpot}
+          onDeletePhoto={deletePhotoFromSpot}
         />
       )}
     </div>
