@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
-import { Mail, Loader2, ArrowLeft, CheckCircle2, Eye, EyeOff, Lock } from 'lucide-react'
+import { Mail, Loader2, ArrowLeft, CheckCircle2, Eye, EyeOff, Lock, Home } from 'lucide-react'
 
 export default function LoginPage() {
   const [message, setMessage] = useState('')
@@ -56,6 +57,11 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Back to Home */}
+      <Link to="/" className="absolute top-4 left-4 text-gray-400 hover:text-white transition-colors z-20">
+        <Home className="w-6 h-6" />
+      </Link>
+
       {/* Background Glow */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[120px]" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[120px]" />

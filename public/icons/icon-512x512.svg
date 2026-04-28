@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#d946ef"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#pinGradient)"/>
+  <path d="M256 42.7C156.3 42.7 75.2 123.8 75.2 223.5c0 128 170.7 277.3 183.5 290.1 4.3 4.3 12.8 4.3 17.1 0C288.5 500.8 459.2 351.5 459.2 223.5 459.2 123.8 378.1 42.7 256 42.7z" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="256" cy="170.7" r="64" fill="rgba(255,255,255,0.3)"/>
+  <text x="256" y="213.3" font-family="Inter, system-ui, sans-serif" font-size="106.7" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">S</text>
+</svg>

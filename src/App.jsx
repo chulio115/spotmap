@@ -10,6 +10,7 @@ import LeaderboardPage from './pages/LeaderboardPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import SettingsPage from './pages/SettingsPage'
+import LandingPage from './pages/LandingPage'
 import SpotForm from './components/SpotForm'
 import SpotDetail from './components/SpotDetail'
 import { useNotifications } from './hooks/useNotifications'
@@ -75,9 +76,12 @@ function AppContent() {
       )}
 
       <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={user ? <Navigate to="/map" replace /> : <RegisterPage />} />
-        <Route path="/login" element={user ? <Navigate to="/map" replace /> : <LoginPage />} />
-        <Route path="/" element={<Navigate to="/map" replace />} />
+
+        {/* Protected Routes */}
         <Route
           path="/map"
           element={
