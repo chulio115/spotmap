@@ -40,12 +40,12 @@ export default function Header({ onViewChange, currentUser, notifications = [], 
     >
       <div className="flex items-center justify-between h-14 px-3 sm:px-4">
         {/* Logo */}
-        <button 
+        <button
           onClick={() => handleNavClick('map')}
           className="flex items-center gap-2 flex-shrink-0"
         >
-          <div className="w-7 h-7 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center shadow-md shadow-violet-500/20">
-            <span className="text-sm">📍</span>
+          <div className="w-7 h-7 rounded-lg overflow-hidden shadow-md shadow-violet-500/20">
+            <img src="/logo.svg" alt="SpotMap" className="w-full h-full object-cover" />
           </div>
           <span className="text-base font-bold text-white tracking-tight hidden sm:inline">SpotMap</span>
         </button>
