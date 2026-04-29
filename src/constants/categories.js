@@ -11,6 +11,19 @@ export const CATEGORIES = [
   { id: 'fishing',     label: 'Angel Location',           emoji: '🎣', color: '#0891B2' },
   { id: 'secret_sex',  label: 'Spicy Spots',               emoji: '🔞', color: '#DC2626' },
   { id: 'misc',        label: 'Sonstiges',                emoji: '📍', color: '#64748B' },
+  { id: 'beach',       label: 'Beach / Wasser',           emoji: '🏖️', color: '#06B6D4' },
+  { id: 'sunset',      label: 'Sunset Spot',              emoji: '🌇', color: '#FB923C' },
+  { id: 'cafe',        label: 'Hidden Cafe',              emoji: '☕', color: '#D97706' },
+  { id: 'chill',       label: 'Chill Spot',               emoji: '🛋️', color: '#818CF8' },
+  { id: 'date',        label: 'Date Night Spot',          emoji: '💑', color: '#F472B6' },
+  { id: 'gaming',      label: 'Gaming Spot',              emoji: '🎮', color: '#A78BFA' },
+  { id: 'photo',       label: 'Photography Spot',         emoji: '📸', color: '#FBBF24' },
+  { id: 'music',       label: 'Live Music / Konzerte',    emoji: '🎵', color: '#EC4899' },
+  { id: 'camping',     label: 'Camping / Glamping',       emoji: '🏕️', color: '#059669' },
+  { id: 'hiking',      label: 'Wanderweg / Hiking',       emoji: '🌲', color: '#65A30D' },
+  { id: 'picnic',      label: 'Picknick Spot',            emoji: '⛺', color: '#84CC16' },
+  { id: 'streetfood',  label: 'Street Food',              emoji: '🍕', color: '#F97316' },
+  { id: 'winebar',     label: 'Weinbar / Tasting',         emoji: '🍷', color: '#9333EA' },
 ];
 
 export const getCategoryById = (id) => {
