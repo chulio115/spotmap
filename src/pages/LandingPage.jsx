@@ -12,8 +12,8 @@ export default function LandingPage() {
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16 pt-8">
-          <div className="mx-auto h-24 w-24 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-violet-500/30 rotate-3">
-            <span className="text-5xl -rotate-3">📍</span>
+          <div className="mx-auto h-24 w-24 rounded-3xl overflow-hidden shadow-2xl shadow-violet-500/30 rotate-3 mb-6">
+            <img src="/logo.svg" alt="SpotMap" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-4">
             <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent">
