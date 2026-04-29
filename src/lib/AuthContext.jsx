@@ -111,20 +111,23 @@ export function AuthProvider({ children }) {
       const provider = new GoogleAuthProvider()
       const result = await signInWithPopup(auth, provider)
       const email = result.user.email
-      
+
       // Check if email is in allowlist
       const allowedEmailDoc = await getDoc(doc(db, 'allowed_emails', email))
-      
+
       if (!allowedEmailDoc.exists()) {
         // Sign out if not allowed
         await signOut(auth)
         throw new Error('Du wurdest noch nicht eingeladen. Kontaktiere den Admin.')
       }
-      
+
+      // Redirect to map after successful login
+      window.location.href = '/map'
+
       return { success: true, user: result.user }
     } catch (error) {
       console.error('Error signing in with Google:', error)
-      
+
       if (error.code === 'auth/popup-closed-by-user') {
         throw new Error('Login abgebrochen.')
       } else if (error.message.includes('nicht eingeladen')) {
@@ -138,20 +141,23 @@ export function AuthProvider({ children }) {
   const signInWithEmail = async (email, password) => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password)
-      
+
       // Check if email is in allowlist
       const allowedEmailDoc = await getDoc(doc(db, 'allowed_emails', email.toLowerCase()))
-      
+
       if (!allowedEmailDoc.exists()) {
         // Sign out if not allowed
         await signOut(auth)
         throw new Error('Du wurdest noch nicht eingeladen. Kontaktiere den Admin.')
       }
-      
+
+      // Redirect to map after successful login
+      window.location.href = '/map'
+
       return { success: true, user: result.user }
     } catch (error) {
       console.error('Error signing in with email:', error)
-      
+
       // Bessere Fehlermeldungen
       if (error.code === 'auth/user-not-found') {
         throw new Error('E-Mail nicht gefunden. Bitte registriere dich zuerst.')

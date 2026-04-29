@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.svg', 'masked-icon.svg', 'logo.svg'],
       manifest: {
         name: 'SpotMap',
         short_name: 'SpotMap',
@@ -24,7 +24,7 @@ export default defineConfig({
             type: 'image/svg+xml'
           },
           {
-            src: 'icons/icon-192x192.svg',
+            src: 'icons/icon-512x512.svg',
             sizes: '512x512',
             type: 'image/svg+xml'
           }
